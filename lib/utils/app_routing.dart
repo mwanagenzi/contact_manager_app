@@ -39,7 +39,7 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
         return MaterialPageRoute(
             builder: (context) => const ContactGroupsScreen());
       }
-    case AppRoutes.createGroup:
+    case AppRoutes.group:
       {
         return MaterialPageRoute(builder: (context) => const GroupScreen());
       }
