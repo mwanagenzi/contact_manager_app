@@ -25,10 +25,10 @@ class AuthButton extends StatelessWidget {
         title: Center(
           child: Text(
             buttonText,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge!
-                .copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
           ),
         ),
       ),

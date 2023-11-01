@@ -32,7 +32,7 @@ class WelcomeScreen extends StatelessWidget {
                           'Hi!',
                           style: Theme.of(context)
                               .textTheme
-                              .headline5!
+                              .headlineSmall!
                               .copyWith(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 2),

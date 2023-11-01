@@ -23,15 +23,14 @@ class ContactsScreen extends StatelessWidget {
                   ),
                   title: Text(
                     'Profile Name',
-                    style: Theme.of(context).textTheme.displayMedium,
+                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
                     'No. of contacts',
-                    style: Theme.of(context).textTheme.displaySmall,
+                    style: Theme.of(context).textTheme.labelMedium,
                   ),
                   trailing: const Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.white,
                   ),
                   onTap: () {
                     Navigator.pushNamed(context, AppRoutes.profile);
@@ -54,7 +53,7 @@ class ContactsScreen extends StatelessWidget {
                       ),
                       subtitle: Text(
                         '+254722000111',
-                        style: Theme.of(context).textTheme.displaySmall,
+                        style: Theme.of(context).textTheme.labelMedium,
                       ),
                       trailing: const Icon(
                         Icons.call,
