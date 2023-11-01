@@ -1,9 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:contacts_manager/views/widgets/profile_dropdown_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
-import '../../utils/app_constants.dart';
 import '../theme/color_palette.dart';
 
 const String avatarUrl =
@@ -125,23 +123,13 @@ class _UserInfoState extends State<UserInfo> {
                             ),
                             const SizedBox(height: 10),
                             ProfileFormField(
-                              labelText: "Phone Number",
-                              initialValue: "0741047445",
-                              formIcon: Icons.call,
-                              isEnabled: isEditingEnabled,
-                              textInputType: TextInputType.phone,
-                            ),
-                            const SizedBox(height: 10),
-                            ProfileFormField(
-                              labelText: "About Me",
-                              initialValue: "I am a friend of God.",
+                              labelText: "Password",
+                              initialValue: "passwords",
                               formIcon: Icons.person,
                               isEnabled: isEditingEnabled,
+                              obscureText: true,
                             ),
                             const SizedBox(height: 10),
-
-                            buildAdditionalUserInfo(isEditingEnabled),
-                            //todo: dependent on designation
                           ],
                         ),
                       ],
@@ -156,62 +144,6 @@ class _UserInfoState extends State<UserInfo> {
     );
   }
 }
-
-final _designationDropdownField = ProfileDropdownFormField(
-  dropdownItems: AppConstants.designationItems,
-  labelText: 'Register as a ...',
-  formFieldIcon: Icons.app_registration_rounded,
-);
-final _genderDropdown = ProfileDropdownFormField(
-  dropdownItems: AppConstants.genderItems,
-  labelText: 'Gender',
-  formFieldIcon: Icons.person_outlined,
-);
-final _cohortDropdown = ProfileDropdownFormField(
-    dropdownItems: AppConstants.cohortItems,
-    labelText: 'Year Of Study',
-    formFieldIcon: Icons.school);
-final _ministryDropdown = ProfileDropdownFormField(
-  dropdownItems: AppConstants.ministryItems,
-  labelText: 'Ministry',
-  formFieldIcon: Icons.engineering,
-);
-final _eTeamDropdown = ProfileDropdownFormField(
-  dropdownItems: AppConstants.evangelisticTeamItems,
-  labelText: 'Evangelistic Team',
-  formFieldIcon: Icons.group,
-);
-
-Widget buildAdditionalUserInfo(bool isFormFieldEnabled) => Column(
-      children: <Widget>[
-        const SizedBox(height: 10),
-        ...ListTile.divideTiles(
-          color: Colors.grey,
-          tiles: [
-            ProfileFormField(
-              labelText: "Residence",
-              initialValue: "Argentina 6/1",
-              formIcon: Icons.home,
-              isEnabled: isFormFieldEnabled,
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _designationDropdownField,
-        const SizedBox(height: 10),
-        //todo: dropdown value get method
-        _genderDropdown,
-        const SizedBox(height: 20),
-        //todo: dropdown value get method
-        _cohortDropdown,
-        const SizedBox(height: 20),
-        //todo: dropdown value get method
-        _ministryDropdown,
-        const SizedBox(height: 20),
-        //todo: dropdown value get method
-        _eTeamDropdown,
-      ],
-    );
 
 class ProfileHeader extends StatelessWidget {
   final String title;
@@ -242,6 +174,7 @@ class ProfileHeader extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 child: CachedNetworkImage(
                   imageUrl: profileImageUrl,
+                  //todo: solve problem in fetching image url
                   imageBuilder: (context, imageProvider) => Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
@@ -289,6 +222,7 @@ class ProfileHeader extends StatelessWidget {
 
 class ProfileFormField extends StatelessWidget {
   final TextInputType? textInputType;
+  final bool? obscureText;
   final String labelText;
   String initialValue;
   final IconData formIcon;
@@ -300,6 +234,7 @@ class ProfileFormField extends StatelessWidget {
     required this.initialValue,
     required this.formIcon,
     this.textInputType,
+    this.obscureText,
     required this.isEnabled,
   }) : super(key: key);
 
@@ -310,6 +245,7 @@ class ProfileFormField extends StatelessWidget {
         onChanged: (newValue) {
           initialValue = newValue;
         },
+        obscureText: obscureText ?? false,
         initialValue: initialValue,
         // validator: _emailValidator, //TODO: set individual validators
         decoration: InputDecoration(

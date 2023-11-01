@@ -17,9 +17,9 @@ class ContactsScreen extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10),
                 child: ListTile(
-                  leading: CircleAvatar(
+                  leading: const CircleAvatar(
                     child: FlutterLogo(
-                        size: 50), //todo replace with cachednetwork iamge
+                        size: 50), //todo replace with cachednetwork image
                   ),
                   title: Text(
                     'Profile Name',
@@ -29,7 +29,7 @@ class ContactsScreen extends StatelessWidget {
                     'No. of contacts',
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
-                  trailing: Icon(
+                  trailing: const Icon(
                     Icons.arrow_forward_ios,
                     color: Colors.white,
                   ),
