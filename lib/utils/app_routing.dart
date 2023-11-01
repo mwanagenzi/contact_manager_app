@@ -47,6 +47,10 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       {
         return MaterialPageRoute(builder: (context) => const ProfileScreen());
       }
+    case AppRoutes.contact:
+      {
+        return MaterialPageRoute(builder: (context) => const ContactScreen());
+      }
 
     default:
       {

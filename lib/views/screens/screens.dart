@@ -1,3 +1,4 @@
+export 'contact_screen.dart' hide UserInfo, ProfileHeader, ProfileFormField;
 export 'contacts_screen.dart';
 export 'error_screen.dart';
 export 'favourite_screen.dart';

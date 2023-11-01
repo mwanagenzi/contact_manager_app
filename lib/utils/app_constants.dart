@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppRoutes {
   static const home = '/home';
   static const recents = '/recents';
+  static const contacts = '/contacts';
   static const profile = '/profile';
   static const favourites = '/favourites';
   static const login = '/login';
@@ -12,6 +13,7 @@ class AppRoutes {
   static const groups = '/groups';
   static const createGroup = '/groups/createGroup';
   static const welcome = '/';
+  static const contact = '/contacts/contact';
 }
 
 class AppConstants {
