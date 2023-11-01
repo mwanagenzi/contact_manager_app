@@ -34,15 +34,15 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
           ),
         );
       }
-    // case AppRoutes.weeklyForecast:
-    //   {
-    //     return MaterialPageRoute(
-    //         builder: (context) => const WeeklyForecastScreen());
-    //   }
-    // case AppRoutes.search:
-    //   {
-    //     return MaterialPageRoute(builder: (context) => SearchLocationScreen());
-    //   }
+    case AppRoutes.groups:
+      {
+        return MaterialPageRoute(
+            builder: (context) => const ContactGroupsScreen());
+      }
+    case AppRoutes.createGroup:
+      {
+        return MaterialPageRoute(builder: (context) => const GroupScreen());
+      }
 
     default:
       {

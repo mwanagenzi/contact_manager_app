@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             currentIndex: navbarTabManager.selectedTab,
             selectedItemColor: Palette.primaryColor,
+            unselectedItemColor: Palette.inactiveCardColor,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                   icon: Icon(Icons.contacts), label: 'Contacts'),

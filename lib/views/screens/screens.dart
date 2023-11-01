@@ -1,5 +1,7 @@
 export 'contacts_screen.dart';
+export 'error_screen.dart';
 export 'favourite_screen.dart';
+export 'group_screen.dart';
 export 'groups_screen.dart';
 export 'home_screen.dart';
 export 'login_screen.dart';
