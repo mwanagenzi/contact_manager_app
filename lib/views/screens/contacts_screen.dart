@@ -1,4 +1,5 @@
 import 'package:contacts_manager/utils/app_constants.dart';
+import 'package:contacts_manager/views/theme/color_palette.dart';
 import 'package:flutter/material.dart';
 
 class ContactsScreen extends StatelessWidget {
@@ -14,12 +15,14 @@ class ContactsScreen extends StatelessWidget {
           children: [
             Flexible(
               flex: 1,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Card(
+                margin: EdgeInsets.only(top: 10, left: 20, right: 20),
+                elevation: 5,
                 child: ListTile(
                   leading: const CircleAvatar(
                     child: FlutterLogo(
-                        size: 50), //todo replace with cachednetwork image
+                        size:
+                            50), //todo replace with cachednetwork image or contact's icon
                   ),
                   title: Text(
                     'Profile Name',
@@ -35,36 +38,45 @@ class ContactsScreen extends StatelessWidget {
                   onTap: () {
                     Navigator.pushNamed(context, AppRoutes.profile);
                   },
+
+                  // RoundedRectangleBorder(
+                  //   borderRadius: BorderRadius.circular(15)),
                 ),
               ),
             ),
             const SizedBox(height: 20),
             Flexible(
               flex: 6,
-              child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        child: FlutterLogo(size: 20),
-                      ),
-                      title: Text(
-                        'Jane Doe',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      subtitle: Text(
-                        '+254722000111',
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                      trailing: const Icon(
-                        Icons.call,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) {
-                    return const SizedBox(height: 15);
-                  },
-                  itemCount: 10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: ListView.separated(
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: const CircleAvatar(
+                          child: FlutterLogo(size: 20),
+                        ),
+                        title: Text(
+                          'Jane Doe',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        subtitle: Text(
+                          '+254722000111',
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                        trailing: const Icon(
+                          Icons.call,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
+                    separatorBuilder: (context, index) {
+                      return const Divider(
+                        height: 25,
+                        color: Palette.dashTileColor,
+                      );
+                    },
+                    itemCount: 10),
+              ),
             ),
           ],
         ),
