@@ -43,6 +43,10 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       {
         return MaterialPageRoute(builder: (context) => const GroupScreen());
       }
+    case AppRoutes.profile:
+      {
+        return MaterialPageRoute(builder: (context) => const ProfileScreen());
+      }
 
     default:
       {

@@ -9,8 +9,8 @@ class Palette {
 
   // static const Color primaryColor = Color(0XFF2B8B23);
   // static const Color secondaryColor = Color(0XFFFFFFFF);
-  // static const Color tileDividerColor = Color(0xFFCA0506);
-  // static const Color hintTextColor = Color(0XFF171616);
-  // static const Color linkTextColor = Color(0XFF0588BC);
-  // static const Color dashTileColor = Color(0xFFD6D4D4);
+  static const Color tileDividerColor = Color(0xFFCA0506);
+  static const Color hintTextColor = Color(0XFF171616);
+  static const Color linkTextColor = Color(0XFF0588BC);
+  static const Color dashTileColor = Color(0xFFD6D4D4);
 }

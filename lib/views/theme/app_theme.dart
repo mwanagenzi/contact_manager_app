@@ -17,6 +17,7 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: Colors.black,
         backgroundColor: Colors.white,
+        unselectedItemColor: Palette.inactiveCardColor,
       ),
     );
   }

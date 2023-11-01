@@ -3,8 +3,6 @@ import 'package:contacts_manager/views/screens/screens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../theme/color_palette.dart';
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -34,8 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
               navbarTabManager.goToTab(index);
             },
             currentIndex: navbarTabManager.selectedTab,
-            selectedItemColor: Palette.primaryColor,
-            unselectedItemColor: Palette.inactiveCardColor,
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
                   icon: Icon(Icons.contacts), label: 'Contacts'),
