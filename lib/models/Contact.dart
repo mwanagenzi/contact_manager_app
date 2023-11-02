@@ -5,31 +5,27 @@ class Contact {
   String? phone;
   String? secondaryPhone;
   String? email;
-  String? label;
-  String? imagUrl;
+  String? imageUrl;
 
   Contact({
-    required int id,
-    required String? firstName,
-    String? surname,
-    required String? phone,
-    String? secondaryPhone,
-    required String? email,
-    String? imageUrl,
-    required String? label,
+    required this.id,
+    required this.firstName,
+    this.surname,
+    required this.phone,
+    this.secondaryPhone,
+    required this.email,
+    this.imageUrl,
   });
 
   factory Contact.fromJson(Map<String, dynamic> json) {
-    final contactData = json['datum'];
     return Contact(
-        firstName: contactData['first_name'] as String,
-        surname: contactData['surname'] as String,
-        phone: contactData['phone'] as String,
-        secondaryPhone: contactData['secondary_phone'] as String,
-        email: contactData['email'] as String,
-        imageUrl: contactData['imageUrl'] as String,
-        label: contactData['label'] as String,
-        id: contactData['id'] as int);
+        firstName: json['first_name'] as String,
+        surname: json['surname'] as String,
+        phone: json['phone'] as String,
+        secondaryPhone: json['secondary_phone'] as String,
+        email: json['email'] as String,
+        imageUrl: json['image'] as String,
+        id: json['id'] as int);
   }
 
   Map<String, dynamic> toJson(Contact contact) => {
@@ -39,7 +35,6 @@ class Contact {
         'phone': contact.phone,
         'secondary_phone': contact.secondaryPhone ?? 'N/A',
         'email': contact.email,
-        'imageUrl': contact.imagUrl ?? 'no image',
-        'label': contact.label,
+        'imageUrl': contact.imageUrl ?? 'no image',
       };
 }

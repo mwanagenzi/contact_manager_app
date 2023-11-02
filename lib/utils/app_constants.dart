@@ -19,6 +19,8 @@ class AppConstants {
   static String TOKEN = "TOKEN";
   static String USER_NAME = "USER_NAME";
   static String EMAIL = "EMAIL";
+  static String AVATAR_URL =
+      'https://cdn-icons-png.flaticon.com/128/560/560277.png';
 
 // static List<DropdownMenuItem<String>> genderItems = const [
 //   DropdownMenuItem(value: 'Male', child: Text('Male')),

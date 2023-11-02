@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     _showSuccessSnackBar('Login success!!!'));
             await storeUserCredentials(jsonMap['token'],
                 jsonMap['datum']['name'], jsonMap['datum']['email']);
-            Navigator.popAndPushNamed(context, AppRoutes.contacts);
+            Navigator.popAndPushNamed(context, AppRoutes.home);
           } else {
             ScaffoldMessenger.of(context)
                 .showSnackBar(//todo: sort lint context rule later
