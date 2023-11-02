@@ -39,13 +39,17 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
         return MaterialPageRoute(
             builder: (context) => const ContactGroupsScreen());
       }
-    case AppRoutes.createGroup:
+    case AppRoutes.group:
       {
         return MaterialPageRoute(builder: (context) => const GroupScreen());
       }
     case AppRoutes.profile:
       {
         return MaterialPageRoute(builder: (context) => const ProfileScreen());
+      }
+    case AppRoutes.contact:
+      {
+        return MaterialPageRoute(builder: (context) => const ContactScreen());
       }
 
     default:

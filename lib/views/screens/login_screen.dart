@@ -148,7 +148,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               Icons.email_outlined,
                               color: Colors.black,
                             ),
-                            focusColor: Palette.highlightedTextColor,
                             hintText: 'Email Address',
                             // ignore: prefer_const_constructors
                             hintStyle: TextStyle(
@@ -175,7 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 .textTheme
                                 .bodyText2!
                                 .copyWith(color: Colors.black),
-                            focusColor: Palette.highlightedTextColor,
                             hintText: 'Password',
                             // ignore: prefer_const_constructors
                             hintStyle: TextStyle(

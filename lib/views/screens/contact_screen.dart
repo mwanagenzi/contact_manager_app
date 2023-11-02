@@ -4,18 +4,17 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 import '../theme/color_palette.dart';
 
-const String avatarUrl =
-    'https://cdn-icons-png.flaticon.com/128/560/560277.png';
+class ContactScreen extends StatelessWidget {
+  const ContactScreen({super.key});
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  static const String avatarUrl =
+      'https://cdn-icons-png.flaticon.com/128/560/560277.png';
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Contact'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -108,26 +107,39 @@ class _UserInfoState extends State<UserInfo> {
                           color: Colors.grey,
                           tiles: [
                             ProfileFormField(
-                              labelText: "Email",
-                              initialValue: "njorogemosesngure@gmail.com",
-                              formIcon: Icons.email_outlined,
+                              labelText: "First Name",
+                              initialValue: "John",
+                              formIcon: Icons.person,
                               isEnabled: isEditingEnabled,
                               textInputType: TextInputType.emailAddress,
                             ),
                             const SizedBox(height: 10),
                             ProfileFormField(
-                              labelText: "Username",
-                              initialValue: "Mwanagenzi",
+                              labelText: "Surname",
+                              initialValue: "Doe",
                               formIcon: Icons.person,
                               isEnabled: isEditingEnabled,
                             ),
                             const SizedBox(height: 10),
                             ProfileFormField(
-                              labelText: "Password",
-                              initialValue: "passwords",
-                              formIcon: Icons.person,
+                              labelText: "Email",
+                              initialValue: "johndoe@mail.com",
+                              formIcon: Icons.mail,
                               isEnabled: isEditingEnabled,
-                              obscureText: true,
+                            ),
+                            const SizedBox(height: 10),
+                            ProfileFormField(
+                              labelText: "Phone Number",
+                              initialValue: "+254711304059",
+                              formIcon: Icons.call,
+                              isEnabled: isEditingEnabled,
+                            ),
+                            const SizedBox(height: 10),
+                            ProfileFormField(
+                              labelText: "Phone Number",
+                              initialValue: "+254711304059",
+                              formIcon: Icons.call,
+                              isEnabled: isEditingEnabled,
                             ),
                             const SizedBox(height: 10),
                           ],
