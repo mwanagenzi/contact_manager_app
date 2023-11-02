@@ -1,11 +1,30 @@
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:contacts_manager/views/theme/color_palette.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum MenuItem { logout, profile }
 
-class ContactsScreen extends StatelessWidget {
-  ContactsScreen({super.key});
+class ContactsScreen extends StatefulWidget {
+  const ContactsScreen({super.key});
+
+  @override
+  State<ContactsScreen> createState() => _ContactsScreenState();
+}
+
+class _ContactsScreenState extends State<ContactsScreen> {
+  String? username;
+
+  void getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    username = prefs.getString(AppConstants.USER_NAME);
+  }
+
+  @override
+  void initState() {
+    getUsername();
+    super.initState();
+  }
 
   MenuItem? selectedValue;
 
@@ -19,6 +38,7 @@ class ContactsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint(username.toString());
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -32,12 +52,12 @@ class ContactsScreen extends StatelessWidget {
                 elevation: 5,
                 child: ListTile(
                   leading: const CircleAvatar(
-                    child: FlutterLogo(
-                        size:
-                            30), //todo replace with cachednetwork image or contact's icon
-                  ),
+                      child: Icon(
+                    Icons.person_outline,
+                    size: 30,
+                  )),
                   title: Text(
-                    'Profile Name',
+                    username ?? 'John Doe',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
