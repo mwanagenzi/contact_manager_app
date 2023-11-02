@@ -13,11 +13,14 @@ class ContactsScreen extends StatefulWidget {
 }
 
 class _ContactsScreenState extends State<ContactsScreen> {
-  String? username;
+  String? _username, _email;
 
   void getUsername() async {
     final prefs = await SharedPreferences.getInstance();
-    username = prefs.getString(AppConstants.USER_NAME);
+    setState(() {
+      _username = prefs.getString(AppConstants.USER_NAME);
+      _email = prefs.getString(AppConstants.EMAIL);
+    });
   }
 
   @override
@@ -38,7 +41,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(username.toString());
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -53,15 +55,15 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 child: ListTile(
                   leading: const CircleAvatar(
                       child: Icon(
-                    Icons.person_outline,
+                    Icons.person,
                     size: 30,
                   )),
                   title: Text(
-                    username ?? 'John Doe',
+                    _username ?? 'Unknown',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   subtitle: Text(
-                    'No. of contacts',
+                    _email ?? 'Unknown email address',
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                   trailing: PopupMenuButton<MenuItem>(

@@ -18,6 +18,7 @@ class AppConstants {
       'https://quickly-integral-crawdad.ngrok-free.app/api';
   static String TOKEN = "TOKEN";
   static String USER_NAME = "USER_NAME";
+  static String EMAIL = "EMAIL";
 
 // static List<DropdownMenuItem<String>> genderItems = const [
 //   DropdownMenuItem(value: 'Male', child: Text('Male')),

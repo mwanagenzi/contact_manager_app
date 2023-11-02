@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:contacts_manager/views/theme/color_palette.dart';
@@ -76,27 +77,34 @@ class _LoginScreenState extends State<LoginScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         content: Text(
           errorMessage,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
         ));
   }
 
   SnackBar _showSuccessSnackBar(String errorMessage) {
     return SnackBar(
-        duration: const Duration(microseconds: 1000),
         backgroundColor: Palette.activeCardColor,
         elevation: 5.0,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         content: Text(
           errorMessage,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
         ));
   }
 
-  Future<void> storeUserCredentials(String token, String username) async {
+  Future<void> storeUserCredentials(
+      String token, String username, String email) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(AppConstants.TOKEN, token);
     prefs.setString(AppConstants.USER_NAME, username);
+    prefs.setString(AppConstants.EMAIL, email);
   }
 
   void _userLogin(BuildContext context, String email, String password) async {
@@ -111,32 +119,27 @@ class _LoginScreenState extends State<LoginScreen> {
             ScaffoldMessenger.of(context)
                 .showSnackBar(//todo: sort lint context rule later
                     _showSuccessSnackBar('Login success!!!'));
-            debugPrint(
-                "pre prefs: ${jsonMap['token']} ${jsonMap['datum']['name']}");
-            await storeUserCredentials(
-                jsonMap['token'], jsonMap['datum']['name']);
-            Navigator.pushNamed(context, AppRoutes.contacts);
+            await storeUserCredentials(jsonMap['token'],
+                jsonMap['datum']['name'], jsonMap['datum']['email']);
+            Navigator.popAndPushNamed(context, AppRoutes.contacts);
           } else {
             ScaffoldMessenger.of(context)
                 .showSnackBar(//todo: sort lint context rule later
                     _showSuccessSnackBar('Login failed!!!'));
           }
-
-          // debugPrint("api data:${jsonDecode(apiData)}");
-          // ScaffoldMessenger.of(context)
-          //     .showSnackBar(//todo: sort lint context rule later
-          //         _showSuccessSnackBar('Login success!!!'));
-
-          // return jsonDecode(apiData);
         } else {
-          var errorApiData = response.body;
+          var errorResponse = response.body;
           debugPrint("response error code : ${response.statusCode} /n"
-              "response body : $errorApiData");
+              "response body : $errorResponse");
           ScaffoldMessenger.of(context)
               .showSnackBar(//todo: sort lint context rule later
                   _showErrorSnackBar('Login failed. Try again later'));
-          // return errorApiData;
         }
+      } on SocketException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar(
+                'Check your internet connection then try again'));
       } on Exception catch (e) {
         debugPrint(e.toString());
       }
