@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +35,14 @@ class _ContactScreenState extends State<ContactScreen> {
     super.initState();
   }
 
-  void asyncFileUpload(String firstName, String surname, String phone,
-      String secondaryPhone, String email, XFile? file) async {
+  void _uploadContact(
+      String firstName,
+      String surname,
+      String phone,
+      String secondaryPhone,
+      String email,
+      XFile? file,
+      BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AppConstants.TOKEN);
 
@@ -67,18 +76,87 @@ class _ContactScreenState extends State<ContactScreen> {
       //Get the response from the server
       debugPrint("multipart response $response");
       var responseData = await response.stream.toBytes();
+
       var responseString = String.fromCharCodes(responseData);
       debugPrint(responseString);
+      Navigator.pop(context);
     } on Exception catch (e) {
       debugPrint("multipart request error ${e.toString()}");
     }
+  }
+
+  void deleteContact(int contactId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    try {
+      http.Response response = await http.get(
+          Uri.parse('${AppConstants.BASE_URL}/delete/$contactId'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+          });
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
+
+        if (jsonMap['success']) {
+          _showSuccessSnackBar(jsonMap['message']);
+        } else {
+          _showErrorSnackBar(jsonMap['message']);
+        }
+      } else {
+        var errorResponse = response.body;
+        debugPrint("response error code : ${response.statusCode} \n"
+            "response body : $errorResponse");
+        ScaffoldMessenger.of(context)
+            .showSnackBar(//todo: sort lint context rule later
+                _showErrorSnackBar('Server error. Try again later'));
+      }
+    } on SocketException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          //todo: sort lint context rule later
+          _showErrorSnackBar('Check your internet connection then try again'));
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  SnackBar _showErrorSnackBar(String errorMessage) {
+    return SnackBar(
+        backgroundColor: Palette.tileDividerColor,
+        elevation: 5.0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        content: Text(
+          errorMessage,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
+        ));
+  }
+
+  SnackBar _showSuccessSnackBar(String successMessage) {
+    return SnackBar(
+        backgroundColor: Palette.activeCardColor,
+        elevation: 5.0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        content: Text(
+          successMessage,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
+        ));
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isEditingEnabled = false;
 
   final ImagePicker picker = ImagePicker();
-  XFile? image;
+  XFile? _image;
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -144,15 +222,11 @@ class _ContactScreenState extends State<ContactScreen> {
                             Icons.camera_alt_outlined,
                           ),
                           onPressed: () async {
-                            image = await picker.pickImage(
+                            final image = await picker.pickImage(
                                 source: ImageSource.gallery);
-                            asyncFileUpload(
-                                _firstNameController.text,
-                                _surnameController.text,
-                                _phoneController.text,
-                                _secondaryPhoneController.text,
-                                _emailController.text,
-                                image);
+                            setState(() {
+                              _image = image;
+                            });
                           },
                         ),
                       )
@@ -268,7 +342,14 @@ class _ContactScreenState extends State<ContactScreen> {
               FilledButton(
                   child: const Text("UPDATE"),
                   onPressed: () {
-                    //todo: update db details accordingly
+                    _uploadContact(
+                        _firstNameController.text,
+                        _surnameController.text,
+                        _phoneController.text,
+                        _secondaryPhoneController.text,
+                        _emailController.text,
+                        _image,
+                        context);
                   })
             ],
           ),
@@ -277,121 +358,6 @@ class _ContactScreenState extends State<ContactScreen> {
     );
   }
 }
-
-// class UserInfo extends StatefulWidget {
-//   const UserInfo({Key? key}) : super(key: key);
-//
-//   @override
-//   State<UserInfo> createState() => _UserInfoState();
-// }
-//
-// class _UserInfoState extends State<UserInfo> {
-//   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-//   bool isEditingEnabled = false;
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       padding: const EdgeInsets.all(10),
-//       child: Column(
-//         children: <Widget>[
-//           Padding(
-//             padding: const EdgeInsets.symmetric(horizontal: 8),
-//             child: Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 const Text(
-//                   "User Information",
-//                   style: TextStyle(
-//                     color: Colors.black87,
-//                     fontWeight: FontWeight.w500,
-//                     fontSize: 16,
-//                   ),
-//                   textAlign: TextAlign.left,
-//                 ),
-//                 MaterialButton(
-//                   color: Colors.white,
-//                   shape: const CircleBorder(
-//                     side: BorderSide(
-//                       color: Colors.green,
-//                       width: 2.0,
-//                     ),
-//                   ),
-//                   elevation: 0,
-//                   child: const Icon(Icons.edit),
-//                   onPressed: () => setState(() {
-//                     isEditingEnabled = !isEditingEnabled;
-//                   }),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           Card(
-//             child: Container(
-//               alignment: Alignment.topLeft,
-//               padding: const EdgeInsets.symmetric(
-//                 vertical: 15,
-//                 horizontal: 5,
-//               ),
-//               child: Form(
-//                 key: _formKey,
-//                 child: Column(
-//                   children: <Widget>[
-//                     Column(
-//                       children: <Widget>[
-//                         ...ListTile.divideTiles(
-//                           color: Colors.grey,
-//                           tiles: [
-//                             ProfileFormField(
-//                               labelText: "First Name",
-//
-//                               formIcon: Icons.person,
-//                               isEnabled: isEditingEnabled,
-//                               textInputType: TextInputType.emailAddress,
-//                             ),
-//                             const SizedBox(height: 10),
-//                             ProfileFormField(
-//                               labelText: "Surname",
-//                               initialValue: "Doe",
-//                               formIcon: Icons.person,
-//                               isEnabled: isEditingEnabled,
-//                             ),
-//                             const SizedBox(height: 10),
-//                             ProfileFormField(
-//                               labelText: "Email",
-//                               initialValue: "johndoe@mail.com",
-//                               formIcon: Icons.mail,
-//                               isEnabled: isEditingEnabled,
-//                             ),
-//                             const SizedBox(height: 10),
-//                             ProfileFormField(
-//                               labelText: "Phone Number",
-//                               initialValue: "+254711304059",
-//                               formIcon: Icons.call,
-//                               isEnabled: isEditingEnabled,
-//                             ),
-//                             const SizedBox(height: 10),
-//                             ProfileFormField(
-//                               labelText: "Phone Number",
-//                               initialValue: "+254711304059",
-//                               formIcon: Icons.call,
-//                               isEnabled: isEditingEnabled,
-//                             ),
-//                             const SizedBox(height: 10),
-//                           ],
-//                         ),
-//                       ],
-//                     )
-//                   ],
-//                 ),
-//               ),
-//             ),
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }
 
 class ProfileHeader extends StatelessWidget {
   final String title;

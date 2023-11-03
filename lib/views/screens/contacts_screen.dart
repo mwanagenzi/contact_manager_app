@@ -105,10 +105,6 @@ class _ContactsScreenState extends State<ContactsScreen> {
                       return ListView.separated(
                           itemBuilder: (context, index) {
                             return ListTile(
-                              onTap: () {
-                                //todo: update contact details
-                                Navigator.pushNamed(context, AppRoutes.contact);
-                              },
                               leading: CircleAvatar(
                                 maxRadius: 20,
                                 minRadius: 10,
@@ -157,6 +153,17 @@ class _ContactsScreenState extends State<ContactsScreen> {
                                   //todo: delete contact
                                 },
                               ),
+                              onTap: () {
+                                //todo: update contact details
+                                Navigator.pushNamed(context, AppRoutes.contact,
+                                    arguments: Contact(
+                                        id: contacts?[index].id,
+                                        firstName: contacts?[index].firstName,
+                                        phone: contacts?[index].phone,
+                                        email: contacts?[index].email,
+                                        secondaryPhone:
+                                            contacts?[index].secondaryPhone));
+                              },
                             );
                           },
                           separatorBuilder: (context, index) {
