@@ -78,13 +78,14 @@ class ContactGroupsScreen extends StatelessWidget {
             "response body : $errorResponse");
         ScaffoldMessenger.of(context)
             .showSnackBar(//todo: sort lint context rule later
-                _showErrorSnackBar('Server error. Try again later'));
+                _showErrorSnackBar('Server error. Try again later', context));
         return ContactGroup(groups: [], contacts: []);
       }
     } on SocketException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
-          _showErrorSnackBar('Check your internet connection then try again'));
+          _showErrorSnackBar(
+              'Check your internet connection then try again', context));
       return ContactGroup(groups: [], contacts: []);
     } on Exception catch (e) {
       debugPrint(e.toString());
@@ -151,6 +152,13 @@ class ContactGroupsScreen extends StatelessWidget {
                     );
                   },
                   itemCount: 10);
+            } else {
+              return Center(
+                child: Text(
+                  'Still loading',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              );
             }
           },
         ),
