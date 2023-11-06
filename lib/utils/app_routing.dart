@@ -1,3 +1,4 @@
+import 'package:contacts_manager/models/Contact.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,6 +40,7 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
             builder: (context) => const ContactGroupsScreen());
       }
     case AppRoutes.group:
+      final contactArgs = settings.arguments as List<Contact>;
       {
         return MaterialPageRoute(builder: (context) => const GroupScreen());
       }

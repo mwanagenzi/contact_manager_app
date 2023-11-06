@@ -78,7 +78,7 @@ class _ContactScreenState extends State<ContactScreen> {
       var responseData = await response.stream.toBytes();
 
       var responseString = String.fromCharCodes(responseData);
-      debugPrint(responseString);
+      debugPrint("Response data: $responseString");
       Navigator.pop(context);
     } on Exception catch (e) {
       debugPrint("multipart request error ${e.toString()}");

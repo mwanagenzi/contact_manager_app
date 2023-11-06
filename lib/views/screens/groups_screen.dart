@@ -15,6 +15,91 @@ import '../../utils/app_constants.dart';
 class ContactGroupsScreen extends StatelessWidget {
   const ContactGroupsScreen({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Contact Groups'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: FutureBuilder(
+          future: _fetchAllGroupContacts(context),
+          builder: (context, AsyncSnapshot<ContactGroup> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: SpinKitFadingCircle(
+                  color: Palette.activeCardColor,
+                ),
+              );
+            } else if (snapshot.hasError) {
+              debugPrint(
+                  "Contact Group error message: ${snapshot.error.toString()}");
+              debugPrint(
+                  "Contact Group snapshot.hasError: ${snapshot.toString()}");
+              return Center(
+                  child: Text(
+                snapshot.error.toString(),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ));
+            } else if (snapshot.connectionState == ConnectionState.done) {
+              final contactGroup = snapshot.data;
+
+              return ListView.separated(
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(
+                        contactGroup?.groups[index].name ?? 'N/A',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      subtitle: Text(
+                        contactGroup?.groups.length.toString() ?? 'N/A',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                      onTap: () {
+                        //todo: update contact details
+                        Navigator.pushNamed(context, AppRoutes.group,
+                            arguments: contactGroup?.contacts ?? []);
+                      },
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          //todo: delete contact
+                        },
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return const Divider(
+                      height: 25,
+                      color: Palette.dashTileColor,
+                    );
+                  },
+                  itemCount: contactGroup?.groups.length ?? 10);
+            } else {
+              return Center(
+                child: Text(
+                  'Still loading',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              );
+            }
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            //todo: Open Group contacts screen
+            Navigator.pushNamed(context, AppRoutes.group);
+          },
+          elevation: 5,
+          child: const Icon(
+            Icons.add,
+            color: Palette.primaryColor,
+          )),
+    );
+  }
+
   SnackBar _showErrorSnackBar(String errorMessage, BuildContext context) {
     return SnackBar(
         backgroundColor: Palette.tileDividerColor,
@@ -61,12 +146,15 @@ class ContactGroupsScreen extends StatelessWidget {
         if (jsonMap['success']) {
           final fetchedContacts = <Contact>[];
           final fetchedGroups = <Group>[];
+          var groupCounter = 0;
 
           for (var group in jsonMap['data']['data']) {
             fetchedGroups.add(Group.fromJson(group));
-            for (var contact in jsonMap['data']['data']['contacts']) {
+            for (var contact in jsonMap['data']['data'][groupCounter]
+                ['contacts']) {
               fetchedContacts.add(Contact.fromJson(contact));
             }
+            groupCounter++;
           }
           return ContactGroup(groups: fetchedGroups, contacts: fetchedContacts);
         } else {
@@ -92,87 +180,8 @@ class ContactGroupsScreen extends StatelessWidget {
       return ContactGroup(groups: [], contacts: []);
     }
   }
+//   create
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contact Groups'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: FutureBuilder(
-          future: _fetchAllGroupContacts(context),
-          builder: (context, AsyncSnapshot<ContactGroup> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: SpinKitFadingCircle(
-                  color: Palette.activeCardColor,
-                ),
-              );
-            } else if (snapshot.hasError) {
-              debugPrint(snapshot.error.toString());
-              debugPrint(snapshot.toString());
-              return Center(
-                  child: Text(
-                snapshot.error.toString(),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ));
-            } else if (snapshot.connectionState == ConnectionState.done) {
-              final contactGroup = snapshot.data;
-
-              return ListView.separated(
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      title: Text(
-                        contactGroup?.groups[index].name ?? 'N/A',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      subtitle: Text(
-                        contactGroup?.groups.length.toString() ?? 'N/A',
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                      onTap: () {
-                        //todo: update contact details
-                        Navigator.pushNamed(context, AppRoutes.group,
-                            arguments: contactGroup?.contacts ?? []);
-                      },
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          //todo: delete contact
-                        },
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) {
-                    return const Divider(
-                      height: 25,
-                      color: Palette.dashTileColor,
-                    );
-                  },
-                  itemCount: 10);
-            } else {
-              return Center(
-                child: Text(
-                  'Still loading',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              );
-            }
-          },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            //todo: Open Group contacts screen
-            Navigator.pushNamed(context, AppRoutes.group);
-          },
-          elevation: 5,
-          child: const Icon(
-            Icons.add,
-            color: Palette.primaryColor,
-          )),
-    );
-  }
+// update
+// delete
 }
