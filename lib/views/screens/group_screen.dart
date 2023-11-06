@@ -21,6 +21,7 @@ class GroupScreen extends StatefulWidget {
 
 class _GroupScreenState extends State<GroupScreen> {
   final _selectedItems = <int>[];
+  final _contactIds = <int>[];
   var _isSelected = false;
 
   @override
@@ -40,16 +41,19 @@ class _GroupScreenState extends State<GroupScreen> {
         child: ListView.separated(
             itemBuilder: (context, index) {
               return ListTile(
-                tileColor:
-                    _isSelected ? Palette.activeCardColor : Colors.transparent,
+                tileColor: _selectedItems.contains(index)
+                    ? Palette.activeCardColor
+                    : Colors.transparent,
                 onLongPress: () {
                   setState(() {
                     if (_isSelected) {
                       _isSelected = false;
                       _selectedItems.remove(index);
+                      _contactIds.add(widget.contacts[index].id ?? 0);
                     } else {
                       _isSelected = true;
                       _selectedItems.add(index);
+                      _contactIds.remove(widget.contacts[index].id ?? 0);
                     }
                   }); //highlight the contact
                 },
@@ -57,11 +61,11 @@ class _GroupScreenState extends State<GroupScreen> {
                   child: FlutterLogo(size: 20),
                 ),
                 title: Text(
-                  'Jane Doe',
+                  "${widget.contacts[index].firstName}",
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 subtitle: Text(
-                  '+254722000111',
+                  "${widget.contacts[index].phone}",
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
                 trailing: IconButton(
@@ -78,7 +82,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 color: Palette.dashTileColor,
               );
             },
-            itemCount: 10),
+            itemCount: widget.contacts.length),
       ),
     );
   }
@@ -138,18 +142,19 @@ class _GroupScreenState extends State<GroupScreen> {
             "Content-Type": "application/json",
             'Accept': 'application/json'
           },
-          body: jsonEncode(<String, dynamic>{"name": "test_list"}));
+          body: jsonEncode(<String, dynamic>{
+            "name": randomName.name(),
+            "contact_ids": _selectedItems
+          }));
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonMap = jsonDecode(response.body);
 
         if (jsonMap['success']) {
-          final contacts = <Contact>[];
-          for (var contact in jsonMap['data']) {
-            contacts.add(Contact.fromJson(contact));
-          }
-          return contacts;
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showSuccessSnackBar(jsonMap['message']));
         } else {
-          return [];
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showErrorSnackBar(jsonMap['message']));
         }
       } else {
         var errorResponse = response.body;
@@ -158,7 +163,6 @@ class _GroupScreenState extends State<GroupScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(//todo: sort lint context rule later
                 _showErrorSnackBar('Server error. Try again later'));
-        return [];
       }
     } on SocketException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
