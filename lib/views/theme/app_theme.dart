@@ -5,7 +5,7 @@ class AppTheme {
   static ThemeData themeData() => ThemeData(
       colorScheme: ColorScheme.fromSwatch().copyWith(
         primary: Palette.primaryColor,
-        secondary: Palette.secondaryColor,
+        secondary: Palette.activeCardColor,
       ),
       appBarTheme: const AppBarTheme(
         centerTitle: true,

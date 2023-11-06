@@ -1,8 +1,7 @@
 import 'package:contacts_manager/utils/app_routing.dart';
+import 'package:contacts_manager/views/screens/login_screen.dart';
 import 'package:contacts_manager/views/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-
-import 'views/screens/welcome_screen.dart';
 
 void main() {
   runApp(const ContactManagerApp());
@@ -17,7 +16,7 @@ class ContactManagerApp extends StatelessWidget {
       title: 'Contact Manager',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.themeData(),
-      home: const WelcomeScreen(),
+      home: const LoginScreen(), //todo if token exists, open home screen
       onGenerateRoute: generateAppRoutes,
     );
   }

@@ -1,16 +1,14 @@
-# contacts_manager
+# Contact Manager
 
-A new Flutter project.
+- Flutter App built to manage persona; contact details.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Clone this project to your local device.
+- Run `flutter pub get` to update all dependencies.
+- Start your PHP server and copy its url.
+- Open the file: `lib/utils/app_constants.dart` and change value of `BASE_URL`.
+- Open a new terminal instance in the text editor or IDE at the project's directory.
+- Run `flutter run -v` to test your app.
+- Open your php server application database.
+- Use on of teh details in the `user's` table to login.

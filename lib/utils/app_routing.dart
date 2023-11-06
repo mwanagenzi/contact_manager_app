@@ -1,4 +1,4 @@
-import 'package:contacts_manager/views/screens/welcome_screen.dart';
+import 'package:contacts_manager/models/Contact.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,13 +8,13 @@ import 'app_constants.dart';
 
 Route<dynamic> generateAppRoutes(RouteSettings settings) {
   switch (settings.name) {
-    case AppRoutes.welcome:
-      {
-        return MaterialPageRoute(builder: (context) => const WelcomeScreen());
-      }
     case AppRoutes.signUp:
       {
         return MaterialPageRoute(builder: (context) => const SignUpScreen());
+      }
+    case AppRoutes.contacts:
+      {
+        return MaterialPageRoute(builder: (context) => const ContactsScreen());
       }
     case AppRoutes.login:
       {
@@ -40,8 +40,12 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
             builder: (context) => const ContactGroupsScreen());
       }
     case AppRoutes.group:
+      final contactArgs = settings.arguments as List<Contact>;
       {
-        return MaterialPageRoute(builder: (context) => const GroupScreen());
+        return MaterialPageRoute(
+            builder: (context) => GroupScreen(
+                  contacts: contactArgs,
+                ));
       }
     case AppRoutes.profile:
       {
