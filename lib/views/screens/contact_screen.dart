@@ -105,7 +105,7 @@ class _ContactScreenState extends State<ContactScreen> {
     }
   }
 
-  void deleteContact(int contactId, BuildContext context) async {
+  Future<void> deleteContact(int contactId, BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AppConstants.TOKEN);
 

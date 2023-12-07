@@ -24,6 +24,43 @@ class _ContactsScreenState extends State<ContactsScreen> {
   String? _username, _email;
   MenuItem? selectedValue;
 
+  Future<void> deleteContact(int? contactId, BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    try {
+      http.Response response = await http.get(
+          Uri.parse('${AppConstants.BASE_URL}/delete/$contactId'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+          });
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
+
+        if (jsonMap['success']) {
+          _showSuccessSnackBar(jsonMap['message']);
+        } else {
+          _showErrorSnackBar(jsonMap['message']);
+        }
+      } else {
+        var errorResponse = response.body;
+        debugPrint("response error code : ${response.statusCode} \n"
+            "response body : $errorResponse");
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar('Server error. Try again later'));
+      }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+          //todo: sort lint context rule later
+          _showErrorSnackBar('Check your internet connection then try again'));
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
   @override
   void initState() {
     getUserCredentials();
@@ -149,8 +186,10 @@ class _ContactsScreenState extends State<ContactsScreen> {
                               ),
                               trailing: IconButton(
                                 icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  //todo: delete contact
+                                onPressed: () async {
+                                  //TODO: Insert dialog prompt
+                                  await deleteContact(
+                                      contacts?[index].id, context);
                                 },
                               ),
                               onTap: () {
