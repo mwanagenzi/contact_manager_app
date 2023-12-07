@@ -1,0 +1,1 @@
+enum ContactScreenActions { add, update }

@@ -169,7 +169,7 @@ class ContactGroupsScreen extends StatelessWidget {
                 _showErrorSnackBar('Server error. Try again later', context));
         return ContactGroup(groups: [], contacts: []);
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
           _showErrorSnackBar(

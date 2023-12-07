@@ -118,7 +118,7 @@ class _GroupScreenState extends State<GroupScreen> {
                 _showErrorSnackBar('Server error. Try again later'));
         return [];
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
           _showErrorSnackBar('Check your internet connection then try again'));
@@ -164,7 +164,7 @@ class _GroupScreenState extends State<GroupScreen> {
             .showSnackBar(//todo: sort lint context rule later
                 _showErrorSnackBar('Server error. Try again later'));
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
           _showErrorSnackBar('Check your internet connection then try again'));

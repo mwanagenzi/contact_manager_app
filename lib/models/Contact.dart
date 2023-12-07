@@ -6,6 +6,7 @@ class Contact {
   String? secondaryPhone;
   String? email;
   String? imageUrl;
+  String? groupName;
 
   Contact({
     required this.id,
@@ -14,6 +15,7 @@ class Contact {
     required this.phone,
     this.secondaryPhone,
     required this.email,
+    required this.groupName,
     this.imageUrl,
   });
 
@@ -25,6 +27,8 @@ class Contact {
         secondaryPhone: json['secondary_phone'] as String,
         email: json['email'] as String,
         imageUrl: json['image'] as String,
+        groupName: "",
+        // groupName: json['group_name'] as String,
         id: json['id'] as int);
   }
 
@@ -35,6 +39,7 @@ class Contact {
         'phone': contact.phone,
         'secondary_phone': contact.secondaryPhone ?? 'N/A',
         'email': contact.email,
+        'group_name': contact.groupName,
         'imageUrl': contact.imageUrl ?? 'no image',
       };
 }

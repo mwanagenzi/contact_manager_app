@@ -162,7 +162,8 @@ class _ContactsScreenState extends State<ContactsScreen> {
                                         phone: contacts?[index].phone,
                                         email: contacts?[index].email,
                                         secondaryPhone:
-                                            contacts?[index].secondaryPhone));
+                                            contacts?[index].secondaryPhone,
+                                        groupName: contacts?[index].groupName));
                               },
                             );
                           },
@@ -276,7 +277,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 _showErrorSnackBar('Server error. Try again later'));
         return [];
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
           _showErrorSnackBar('Check your internet connection then try again'));

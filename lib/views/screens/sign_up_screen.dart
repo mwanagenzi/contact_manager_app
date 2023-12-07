@@ -70,7 +70,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         elevation: 2.0,
         content: Text(
           errorMessage,
-          style: Theme.of(context).textTheme.bodyText2,
+          style: Theme.of(context).textTheme.bodyMedium,
         ));
   }
 
@@ -126,7 +126,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             'Sign Up',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline5!
+                                .headlineSmall!
                                 .copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 2),
@@ -168,7 +168,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             labelText: 'Password',
                             labelStyle: Theme.of(context)
                                 .textTheme
-                                .bodyText2!
+                                .bodyMedium!
                                 .copyWith(color: Colors.black),
                             focusColor: Palette.highlightedTextColor,
                             hintText: 'Password',
@@ -212,7 +212,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         const SizedBox(height: 20),
                         Center(
                           child: Text('or',
-                              style: Theme.of(context).textTheme.bodyText1),
+                              style: Theme.of(context).textTheme.bodyLarge),
                         ),
                         const SizedBox(height: 20),
                         Row(

@@ -53,7 +53,17 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       }
     case AppRoutes.contact:
       {
-        return MaterialPageRoute(builder: (context) => const ContactScreen());
+        final contactArgs = settings.arguments as Contact?;
+        return MaterialPageRoute(
+            builder: (context) => ContactScreen(
+                  contact: contactArgs ??
+                      Contact(
+                          id: 0,
+                          firstName: "",
+                          phone: "",
+                          email: "",
+                          groupName: ""),
+                ));
       }
 
     default:

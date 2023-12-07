@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
               .showSnackBar(//todo: sort lint context rule later
                   _showErrorSnackBar('Login failed. Try again later'));
         }
-      } on SocketException catch (e) {
+      } on SocketException {
         ScaffoldMessenger.of(context).showSnackBar(
             //todo: sort lint context rule later
             _showErrorSnackBar(
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Login',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline5!
+                                .headlineSmall!
                                 .copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 2),
@@ -190,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelText: 'Email Address',
                             labelStyle: Theme.of(context)
                                 .textTheme
-                                .bodyText2!
+                                .bodyMedium!
                                 .copyWith(color: Colors.black),
                             prefixIcon: const Icon(
                               Icons.email_outlined,
@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelText: 'Password',
                             labelStyle: Theme.of(context)
                                 .textTheme
-                                .bodyText2!
+                                .bodyMedium!
                                 .copyWith(color: Colors.black),
                             hintText: 'Password',
                             // ignore: prefer_const_constructors
