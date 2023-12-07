@@ -36,8 +36,7 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       }
     case AppRoutes.groups:
       {
-        return MaterialPageRoute(
-            builder: (context) => const ContactGroupsScreen());
+        return MaterialPageRoute(builder: (context) => ContactGroupsScreen());
       }
     case AppRoutes.group:
       final contactArgs = settings.arguments as List<Contact>?;

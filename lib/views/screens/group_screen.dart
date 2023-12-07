@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:contacts_manager/views/screens/contact_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:random_name_generator/random_name_generator.dart';
@@ -22,12 +23,23 @@ class GroupScreen extends StatefulWidget {
 class _GroupScreenState extends State<GroupScreen> {
   final _selectedItems = <int>[];
   final _contactIds = <int>[];
-  var _isSelected = false;
+  List<ContactListItem<Contact>> contactListItems = [];
+
+  // var _isSelected = false;
+  late TextEditingController _groupNameTextEditingController;
 
   @override
   void initState() {
     // TODO: initialize selectedItems
+    assignContactListItem(widget.contacts);
+    _groupNameTextEditingController = TextEditingController();
     super.initState();
+  }
+
+  void assignContactListItem(List<Contact> contacts) {
+    for (var contact in contacts) {
+      contactListItems.add(ContactListItem<Contact>(contact));
+    }
   }
 
   @override
@@ -40,39 +52,56 @@ class _GroupScreenState extends State<GroupScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: ListView.separated(
             itemBuilder: (context, index) {
-              return ListTile(
-                tileColor: _selectedItems.contains(index)
-                    ? Palette.activeCardColor
-                    : Colors.transparent,
+              return GestureDetector(
+                onTap: () {
+                  if (contactListItems.any((item) => item.isSelected)) {
+                    setState(() {
+                      contactListItems[index].isSelected =
+                          !contactListItems[index].isSelected;
+                    });
+                  }
+                },
                 onLongPress: () {
                   setState(() {
-                    if (_isSelected) {
-                      _isSelected = false;
-                      _selectedItems.remove(index);
-                      _contactIds.add(widget.contacts[index].id ?? 0);
-                    } else {
-                      _isSelected = true;
-                      _selectedItems.add(index);
-                      _contactIds.remove(widget.contacts[index].id ?? 0);
-                    }
-                  }); //highlight the contact
+                    contactListItems[index].isSelected = true;
+                  });
                 },
-                leading: const CircleAvatar(
-                  child: FlutterLogo(size: 20),
-                ),
-                title: Text(
-                  "${widget.contacts[index].firstName}",
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                subtitle: Text(
-                  "${widget.contacts[index].phone}",
-                  style: Theme.of(context).textTheme.labelMedium,
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    //todo: delete contact from group
-                  },
+                child: ListTile(
+                  tileColor: contactListItems[index].isSelected
+                      ? Palette.activeCardColor
+                      : Colors.transparent,
+                  // onTap: () {
+                  //   setState(() {
+                  //     if (_isSelected) {
+                  //       _isSelected = false;
+                  //       _selectedItems.remove(index);
+                  //       _contactIds.add(widget.contacts[index].id ?? 0);
+                  //       debugPrint("SelectedIds:$_contactIds");
+                  //     } else {
+                  //       _isSelected = true;
+                  //       _selectedItems.add(index);
+                  //       _contactIds.remove(widget.contacts[index].id ?? 0);
+                  //       debugPrint("SelectedIds:$_contactIds");
+                  //     }
+                  //   }); //highlight the contact
+                  // },
+                  leading: const CircleAvatar(
+                    child: FlutterLogo(size: 20),
+                  ),
+                  title: Text(
+                    "${widget.contacts[index].firstName}",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  subtitle: Text(
+                    "${widget.contacts[index].phone}",
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      //todo: delete contact from group
+                    },
+                  ),
                 ),
               );
             },
@@ -84,10 +113,54 @@ class _GroupScreenState extends State<GroupScreen> {
             },
             itemCount: widget.contacts.length),
       ),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                      title: Text("Group name"),
+                      content: ProfileFormField(
+                        labelText: "Group name",
+                        formIcon: Icons.groups,
+                        textInputType: TextInputType.text,
+                        obscureText: false,
+                        textEditingController: _groupNameTextEditingController,
+                        isEnabled: true,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () async {
+                            //todo: call add contact api here
+                            final selectedContactListItems =
+                                contactListItems.where((contactListItem) =>
+                                    contactListItem.isSelected);
+                            final selectedIds = [];
+                            for (var contact in selectedContactListItems) {
+                              selectedIds.add(contact.contact?.id);
+                            }
+                            debugPrint("Selected Ids: $selectedIds");
+                            // debugPrint("Selected Items: $_contactIds");
+                          },
+                          child: Text("OK"),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text("CANCEL"),
+                        ),
+                      ],
+                    ));
+          },
+          elevation: 5,
+          child: const Icon(
+            Icons.done,
+            color: Palette.primaryColor,
+          )),
     );
   }
 
-  Future addContactsToGroup(List<int> contactIds) async {
+  Future addContactsToGroup(List<int> contactIds, String groupName) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.TOKEN);
@@ -162,4 +235,18 @@ class _GroupScreenState extends State<GroupScreen> {
               ?.copyWith(color: Colors.white),
         ));
   }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _groupNameTextEditingController.dispose();
+    super.dispose();
+  }
+}
+
+class ContactListItem<T> {
+  bool isSelected = false;
+  T? contact;
+
+  ContactListItem(this.contact);
 }

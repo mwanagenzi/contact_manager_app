@@ -12,8 +12,12 @@ import '../../models/Contact.dart';
 import '../../models/Group.dart';
 import '../../utils/app_constants.dart';
 
+enum ContactGroupTileMenuItem { update, delete }
+
 class ContactGroupsScreen extends StatelessWidget {
-  const ContactGroupsScreen({super.key});
+  ContactGroupsScreen({super.key});
+
+  ContactGroupTileMenuItem? selectedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -53,19 +57,29 @@ class ContactGroupsScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       subtitle: Text(
-                        contactGroup?.groups.length.toString() ?? 'N/A',
+                        "${contactGroup?.groups.length} contacts" ?? 'N/A',
                         style: Theme.of(context).textTheme.labelMedium,
                       ),
-                      onTap: () {
-                        //todo: update contact details
-                        Navigator.pushNamed(context, AppRoutes.group,
-                            arguments: contactGroup?.contacts ?? []);
-                      },
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          //todo: delete contact
-                        },
+                      trailing: PopupMenuButton<ContactGroupTileMenuItem>(
+                        onSelected: (ContactGroupTileMenuItem item) =>
+                            item == ContactGroupTileMenuItem.update
+                                ? Navigator.pushNamed(context, AppRoutes.group,
+                                    arguments: contactGroup?.contacts ?? [])
+                                : ScaffoldMessenger.of(context).showSnackBar(
+                                    _showSuccessSnackBar(
+                                        "Delete pressed", context)),
+                        initialValue: selectedValue,
+                        itemBuilder: (context) =>
+                            <PopupMenuEntry<ContactGroupTileMenuItem>>[
+                          const PopupMenuItem(
+                            value: ContactGroupTileMenuItem.update,
+                            child: Text('Update'),
+                          ),
+                          const PopupMenuItem(
+                            value: ContactGroupTileMenuItem.delete,
+                            child: Text('Delete'),
+                          ),
+                        ],
                       ),
                     );
                   },
@@ -91,7 +105,7 @@ class ContactGroupsScreen extends StatelessWidget {
           onPressed: () async {
             //todo: Open Group contacts screen
             final unallocatedContacts =
-                await getAllUnallocatedContacts(context);
+                await _getAllUnallocatedContacts(context);
             Navigator.pushNamed(context, AppRoutes.group,
                 arguments: unallocatedContacts);
           },
@@ -133,7 +147,7 @@ class ContactGroupsScreen extends StatelessWidget {
         ));
   }
 
-  Future<List<Contact>> getAllUnallocatedContacts(BuildContext context) async {
+  Future<List<Contact>> _getAllUnallocatedContacts(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.TOKEN);

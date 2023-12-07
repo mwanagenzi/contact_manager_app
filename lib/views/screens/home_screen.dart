@@ -15,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const ContactsScreen(),
     const FavouritesScreen(),
     const RecentsScreen(),
-    const ContactGroupsScreen()
+    ContactGroupsScreen()
   ];
 
   @override
