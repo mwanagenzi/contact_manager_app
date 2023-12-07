@@ -57,17 +57,23 @@ class ContactGroupsScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       subtitle: Text(
-                        "${contactGroup?.groups.length} contacts" ?? 'N/A',
+                        "${contactGroup?.contacts.where((contact) => contact.groupId == contactGroup.groups[index].groupId).length} contacts" ??
+                            'N/A',
                         style: Theme.of(context).textTheme.labelMedium,
                       ),
                       trailing: PopupMenuButton<ContactGroupTileMenuItem>(
-                        onSelected: (ContactGroupTileMenuItem item) =>
-                            item == ContactGroupTileMenuItem.update
-                                ? Navigator.pushNamed(context, AppRoutes.group,
-                                    arguments: contactGroup?.contacts ?? [])
-                                : ScaffoldMessenger.of(context).showSnackBar(
-                                    _showSuccessSnackBar(
-                                        "Delete pressed", context)),
+                        onSelected: (ContactGroupTileMenuItem item) => item ==
+                                ContactGroupTileMenuItem.update
+                            ? Navigator.pushNamed(context, AppRoutes.group,
+                                arguments: contactGroup?.contacts
+                                        .where((contact) =>
+                                            contact.groupId ==
+                                            contactGroup.groups[index].groupId)
+                                        .toList() ??
+                                    [])
+                            : ScaffoldMessenger.of(context).showSnackBar(
+                                _showSuccessSnackBar(
+                                    "Delete pressed", context)),
                         initialValue: selectedValue,
                         itemBuilder: (context) =>
                             <PopupMenuEntry<ContactGroupTileMenuItem>>[
@@ -241,8 +247,7 @@ class ContactGroupsScreen extends StatelessWidget {
       return ContactGroup(groups: [], contacts: []);
     }
   }
-//   create
-
+//   create... complete api call
 // update
 // delete
 }

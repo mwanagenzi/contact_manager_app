@@ -1,5 +1,6 @@
 class Contact {
   int? id;
+  int? groupId;
   String? firstName;
   String? surname;
   String? phone;
@@ -10,6 +11,7 @@ class Contact {
 
   Contact({
     required this.id,
+    this.groupId,
     required this.firstName,
     this.surname,
     required this.phone,
@@ -29,7 +31,8 @@ class Contact {
         imageUrl: json['image'] as String,
         groupName: "",
         // groupName: json['group_name'] as String,
-        id: json['id'] as int);
+        id: json['id'] as int,
+        groupId: json['group_id'] as int);
   }
 
   Map<String, dynamic> toJson(Contact contact) => {
