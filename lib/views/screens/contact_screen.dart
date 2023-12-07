@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:contacts_manager/models/Contact.dart';
+import 'package:contacts_manager/models/ContactScreenActions.dart';
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -46,7 +47,7 @@ class _ContactScreenState extends State<ContactScreen> {
     super.initState();
   }
 
-  void _uploadContact(
+  Future<void> _uploadContact(
       String firstName,
       String surname,
       String phone,
@@ -54,7 +55,8 @@ class _ContactScreenState extends State<ContactScreen> {
       String email,
       String groupName,
       XFile? file,
-      BuildContext context) async {
+      BuildContext context,
+      ContactScreenActions uploadAction) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AppConstants.TOKEN);
 
@@ -79,12 +81,15 @@ class _ContactScreenState extends State<ContactScreen> {
     request.fields.addAll(fields);
     request.headers.addAll(headers);
 
-    //create multipart using filepath, string or bytes
-    try {
+    //todo: check if file path is null,
+    if (file != null) {
       var pic = await http.MultipartFile.fromPath("image", file!.path);
       //add multipart to request
       request.files.add(pic);
+    }
 
+    //create multipart using filepath, string or bytes
+    try {
       var response = await request.send();
       //Get the response from the server
       debugPrint("multipart response $response");
@@ -92,13 +97,15 @@ class _ContactScreenState extends State<ContactScreen> {
 
       var responseString = String.fromCharCodes(responseData);
       debugPrint("Response data: $responseString");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(_showSuccessSnackBar(responseString));
       Navigator.pop(context);
     } on Exception catch (e) {
       debugPrint("multipart request error ${e.toString()}");
     }
   }
 
-  void deleteContact(int contactId) async {
+  void deleteContact(int contactId, BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AppConstants.TOKEN);
 
@@ -122,9 +129,9 @@ class _ContactScreenState extends State<ContactScreen> {
         var errorResponse = response.body;
         debugPrint("response error code : ${response.statusCode} \n"
             "response body : $errorResponse");
-        ScaffoldMessenger.of(context)
-            .showSnackBar(//todo: sort lint context rule later
-                _showErrorSnackBar('Server error. Try again later'));
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar('Server error. Try again later'));
       }
     } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -361,9 +368,10 @@ class _ContactScreenState extends State<ContactScreen> {
               ),
               const SizedBox(height: 10.0),
               FilledButton(
-                  child: Text(widget.contact?.id == 0 ? "ADD" : "UPDATE"),
-                  onPressed: () {
-                    _uploadContact(
+                  child: Text(widget.contact.id == 0 ? "ADD" : "UPDATE"),
+                  onPressed: () async {
+                    debugPrint("Before upload contact");
+                    await _uploadContact(
                         _firstNameController.text,
                         _surnameController.text,
                         _phoneController.text,
@@ -371,7 +379,11 @@ class _ContactScreenState extends State<ContactScreen> {
                         _emailController.text,
                         _groupNameController.text,
                         _image,
-                        context);
+                        context,
+                        widget.contact.id == 0
+                            ? ContactScreenActions.add
+                            : ContactScreenActions.update);
+                    debugPrint("After upload contact");
                   })
             ],
           ),
