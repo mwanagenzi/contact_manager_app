@@ -29,8 +29,7 @@ class Contact {
         secondaryPhone: json['secondary_phone'] as String,
         email: json['email'] as String,
         imageUrl: json['image'] as String,
-        groupName: "",
-        // groupName: json['group_name'] as String,
+        groupName: json['group_name'] as String,
         id: json['id'] as int,
         groupId: json['group_id'] as int);
   }
@@ -43,6 +42,6 @@ class Contact {
         'secondary_phone': contact.secondaryPhone ?? 'N/A',
         'email': contact.email,
         'group_name': contact.groupName,
-        'imageUrl': contact.imageUrl ?? 'no image',
+        'image': contact.imageUrl ?? 'no image',
       };
 }

@@ -39,12 +39,11 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
         return MaterialPageRoute(builder: (context) => ContactGroupsScreen());
       }
     case AppRoutes.group:
-      final contactArgs = settings.arguments as List<Contact>?;
+      final groupScreenArgs = settings.arguments as Map<String, dynamic>;
       {
         return MaterialPageRoute(
-            builder: (context) => GroupScreen(
-                  contacts: contactArgs ?? [],
-                ));
+            builder: (context) =>
+                GroupScreen(groupScreenData: groupScreenArgs));
       }
     case AppRoutes.profile:
       {
