@@ -15,10 +15,19 @@ import '../../utils/app_constants.dart';
 
 enum ContactGroupTileMenuItem { update, delete }
 
-class ContactGroupsScreen extends StatelessWidget {
-  ContactGroupsScreen({super.key});
+class ContactGroupsScreen extends StatefulWidget {
+  const ContactGroupsScreen({super.key});
 
+  @override
+  State<ContactGroupsScreen> createState() => _ContactGroupsScreenState();
+}
+
+class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
   ContactGroupTileMenuItem? selectedValue;
+
+  Future<void> _syncGroupDetails() async {
+    await _fetchAllContactGroups(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,57 +61,97 @@ class ContactGroupsScreen extends StatelessWidget {
 
               if (snapshot.data!.contacts.isNotEmpty &&
                   snapshot.data!.groups.isNotEmpty) {
-                return ListView.separated(
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          contactGroup?.groups[index].name ?? 'N/A',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        subtitle: Text(
-                          "${contactGroup?.contacts.where((contact) => contact.groupId == contactGroup.groups[index].groupId).length} contacts" ??
-                              'N/A',
-                          style: Theme.of(context).textTheme.labelMedium,
-                        ),
-                        trailing: PopupMenuButton<ContactGroupTileMenuItem>(
-                          onSelected: (ContactGroupTileMenuItem item) =>
-                              item == ContactGroupTileMenuItem.update
-                                  ? Navigator.pushNamed(
-                                      context, AppRoutes.group, arguments: {
-                                      "contacts": contactGroup?.contacts
-                                              .where((contact) =>
-                                                  contact.groupId ==
-                                                  contactGroup
-                                                      .groups[index].groupId)
-                                              .toList() ??
-                                          [],
-                                      "action": GroupScreenActions.update
-                                    })
-                                  : ScaffoldMessenger.of(context).showSnackBar(
-                                      _showSuccessSnackBar(
-                                          "Delete pressed", context)),
-                          initialValue: selectedValue,
-                          itemBuilder: (context) =>
-                              <PopupMenuEntry<ContactGroupTileMenuItem>>[
-                            const PopupMenuItem(
-                              value: ContactGroupTileMenuItem.update,
-                              child: Text('Update'),
-                            ),
-                            const PopupMenuItem(
-                              value: ContactGroupTileMenuItem.delete,
-                              child: Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    separatorBuilder: (context, index) {
-                      return const Divider(
-                        height: 25,
-                        color: Palette.dashTileColor,
-                      );
-                    },
-                    itemCount: contactGroup?.groups.length ?? 10);
+                return RefreshIndicator(
+                  onRefresh: () {
+                    setState(() {});
+                    return _syncGroupDetails();
+                  },
+                  child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(
+                            contactGroup?.groups[index].name ?? 'N/A',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          subtitle: Text(
+                            "${contactGroup?.contacts.where((contact) => contact.groupId == contactGroup.groups[index].groupId).length} contacts" ??
+                                'N/A',
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                          trailing: PopupMenuButton<ContactGroupTileMenuItem>(
+                            onSelected: (ContactGroupTileMenuItem item) =>
+                                item == ContactGroupTileMenuItem.update
+                                    ? Navigator.pushNamed(
+                                        context, AppRoutes.group,
+                                        arguments: {
+                                            "contacts": contactGroup?.contacts
+                                                    .where((contact) =>
+                                                        contact.groupId ==
+                                                        contactGroup
+                                                            .groups[index]
+                                                            .groupId)
+                                                    .toList() ??
+                                                [],
+                                            "action": GroupScreenActions.update
+                                          })
+                                    : showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                              title:
+                                                  const Text("Confirm Delete"),
+                                              content: const Text(
+                                                  "Are you sure you want to delete this group?"),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    await deleteGroup(
+                                                        contactGroup
+                                                            ?.groups[index]
+                                                            .groupId,
+                                                        context);
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text(
+                                                    "YES",
+                                                    style: TextStyle(
+                                                        color: Palette
+                                                            .activeCardColor),
+                                                  ),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context),
+                                                  child: const Text(
+                                                    "NO",
+                                                    style: TextStyle(
+                                                        color: Colors.red),
+                                                  ),
+                                                )
+                                              ],
+                                            )),
+                            initialValue: selectedValue,
+                            itemBuilder: (context) =>
+                                <PopupMenuEntry<ContactGroupTileMenuItem>>[
+                              const PopupMenuItem(
+                                value: ContactGroupTileMenuItem.update,
+                                child: Text('Update'),
+                              ),
+                              const PopupMenuItem(
+                                value: ContactGroupTileMenuItem.delete,
+                                child: Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) {
+                        return const Divider(
+                          height: 25,
+                          color: Palette.dashTileColor,
+                        );
+                      },
+                      itemCount: contactGroup?.groups.length ?? 10),
+                );
               } else {
                 return Center(
                   child: Column(
@@ -290,9 +339,11 @@ class ContactGroupsScreen extends StatelessWidget {
         final Map<String, dynamic> jsonMap = jsonDecode(response.body);
 
         if (jsonMap['success']) {
-          _showSuccessSnackBar(jsonMap['message'], context);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showSuccessSnackBar(jsonMap['message'], context));
         } else {
-          _showErrorSnackBar(jsonMap['message'], context);
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showErrorSnackBar(jsonMap['message'], context));
         }
       } else {
         var errorResponse = response.body;
