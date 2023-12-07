@@ -87,48 +87,6 @@ class _GroupScreenState extends State<GroupScreen> {
     );
   }
 
-  Future<List<Contact>> getAllContacts() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(AppConstants.TOKEN);
-      http.Response response = await http
-          .get(Uri.parse('${AppConstants.BASE_URL}/contacts'), headers: {
-        "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
-        'Accept': 'application/json'
-      });
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
-
-        if (jsonMap['success']) {
-          final contacts = <Contact>[];
-          for (var contact in jsonMap['data']) {
-            contacts.add(Contact.fromJson(contact));
-          }
-          return contacts;
-        } else {
-          return [];
-        }
-      } else {
-        var errorResponse = response.body;
-        debugPrint("response error code : ${response.statusCode} \n"
-            "response body : $errorResponse");
-        ScaffoldMessenger.of(context)
-            .showSnackBar(//todo: sort lint context rule later
-                _showErrorSnackBar('Server error. Try again later'));
-        return [];
-      }
-    } on SocketException {
-      ScaffoldMessenger.of(context).showSnackBar(
-          //todo: sort lint context rule later
-          _showErrorSnackBar('Check your internet connection then try again'));
-      return [];
-    } on Exception catch (e) {
-      debugPrint(e.toString());
-      return [];
-    }
-  }
-
   Future addContactsToGroup(List<int> contactIds) async {
     try {
       final prefs = await SharedPreferences.getInstance();

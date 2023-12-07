@@ -24,7 +24,7 @@ class ContactGroupsScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: FutureBuilder(
-          future: _fetchAllGroupContacts(context),
+          future: _fetchAllContactGroups(context),
           builder: (context, AsyncSnapshot<ContactGroup> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -88,9 +88,12 @@ class ContactGroupsScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () {
+          onPressed: () async {
             //todo: Open Group contacts screen
-            Navigator.pushNamed(context, AppRoutes.group);
+            final unallocatedContacts =
+                await getAllUnallocatedContacts(context);
+            Navigator.pushNamed(context, AppRoutes.group,
+                arguments: unallocatedContacts);
           },
           elevation: 5,
           child: const Icon(
@@ -130,7 +133,51 @@ class ContactGroupsScreen extends StatelessWidget {
         ));
   }
 
-  Future<ContactGroup> _fetchAllGroupContacts(BuildContext context) async {
+  Future<List<Contact>> getAllUnallocatedContacts(BuildContext context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(AppConstants.TOKEN);
+      http.Response response = await http.get(
+          Uri.parse('${AppConstants.BASE_URL}/unallocated_contacts'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+          });
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
+
+        if (jsonMap['success']) {
+          final contacts = <Contact>[];
+          for (var contact in jsonMap['data']) {
+            contacts.add(Contact.fromJson(contact));
+          }
+          return contacts;
+        } else {
+          return [];
+        }
+      } else {
+        var errorResponse = response.body;
+        debugPrint("response error code : ${response.statusCode} \n"
+            "response body : $errorResponse");
+        ScaffoldMessenger.of(context)
+            .showSnackBar(//todo: sort lint context rule later
+                _showErrorSnackBar('Server error. Try again later', context));
+        return [];
+      }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+          //todo: sort lint context rule later
+          _showErrorSnackBar(
+              'Check your internet connection then try again', context));
+      return [];
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+      return [];
+    }
+  }
+
+  Future<ContactGroup> _fetchAllContactGroups(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.TOKEN);
