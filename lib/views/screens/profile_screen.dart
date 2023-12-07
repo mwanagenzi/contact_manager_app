@@ -253,7 +253,7 @@ class ProfileFormField extends StatelessWidget {
         // validator: _emailValidator, //TODO: set individual validators
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: Theme.of(context).textTheme.bodyText2,
+          labelStyle: Theme.of(context).textTheme.bodyMedium,
           prefixIcon: Icon(
             formIcon,
             color: Colors.black,

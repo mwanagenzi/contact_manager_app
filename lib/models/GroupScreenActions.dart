@@ -1,0 +1,1 @@
+enum GroupScreenActions { add, update }

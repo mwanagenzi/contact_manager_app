@@ -1,19 +1,23 @@
 class Contact {
   int? id;
+  int? groupId;
   String? firstName;
   String? surname;
   String? phone;
   String? secondaryPhone;
   String? email;
   String? imageUrl;
+  String? groupName;
 
   Contact({
     required this.id,
+    this.groupId,
     required this.firstName,
     this.surname,
     required this.phone,
     this.secondaryPhone,
     required this.email,
+    required this.groupName,
     this.imageUrl,
   });
 
@@ -25,7 +29,9 @@ class Contact {
         secondaryPhone: json['secondary_phone'] as String,
         email: json['email'] as String,
         imageUrl: json['image'] as String,
-        id: json['id'] as int);
+        groupName: json['group_name'] as String,
+        id: json['id'] as int,
+        groupId: json['group_id'] as int);
   }
 
   Map<String, dynamic> toJson(Contact contact) => {
@@ -35,6 +41,7 @@ class Contact {
         'phone': contact.phone,
         'secondary_phone': contact.secondaryPhone ?? 'N/A',
         'email': contact.email,
-        'imageUrl': contact.imageUrl ?? 'no image',
+        'group_name': contact.groupName,
+        'image': contact.imageUrl ?? 'no image',
       };
 }

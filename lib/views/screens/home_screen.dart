@@ -12,10 +12,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Widget> appPages = [
-    ContactsScreen(),
+    const ContactsScreen(),
     const FavouritesScreen(),
     const RecentsScreen(),
-    const ContactGroupsScreen()
+    ContactGroupsScreen()
   ];
 
   @override

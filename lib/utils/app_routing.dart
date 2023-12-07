@@ -36,16 +36,14 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       }
     case AppRoutes.groups:
       {
-        return MaterialPageRoute(
-            builder: (context) => const ContactGroupsScreen());
+        return MaterialPageRoute(builder: (context) => ContactGroupsScreen());
       }
     case AppRoutes.group:
-      final contactArgs = settings.arguments as List<Contact>;
+      final groupScreenArgs = settings.arguments as Map<String, dynamic>;
       {
         return MaterialPageRoute(
-            builder: (context) => GroupScreen(
-                  contacts: contactArgs,
-                ));
+            builder: (context) =>
+                GroupScreen(groupScreenData: groupScreenArgs));
       }
     case AppRoutes.profile:
       {
@@ -53,7 +51,17 @@ Route<dynamic> generateAppRoutes(RouteSettings settings) {
       }
     case AppRoutes.contact:
       {
-        return MaterialPageRoute(builder: (context) => const ContactScreen());
+        final contactArgs = settings.arguments as Contact?;
+        return MaterialPageRoute(
+            builder: (context) => ContactScreen(
+                  contact: contactArgs ??
+                      Contact(
+                          id: 0,
+                          firstName: "",
+                          phone: "",
+                          email: "",
+                          groupName: ""),
+                ));
       }
 
     default:

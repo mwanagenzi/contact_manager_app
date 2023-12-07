@@ -38,7 +38,7 @@ class _ProfileDropdownFormFieldState extends State<ProfileDropdownFormField> {
         decoration: InputDecoration(
           enabled: widget.isEnabled ?? true,
           labelText: widget.labelText,
-          labelStyle: Theme.of(context).textTheme.bodyText2,
+          labelStyle: Theme.of(context).textTheme.bodyMedium,
           prefixIcon: Icon(
             widget.formFieldIcon,
             color: Colors.black,

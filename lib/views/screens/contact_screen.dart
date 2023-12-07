@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:contacts_manager/models/Contact.dart';
+import 'package:contacts_manager/models/ContactScreenActions.dart';
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -12,7 +14,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/color_palette.dart';
 
 class ContactScreen extends StatefulWidget {
-  const ContactScreen({super.key});
+  final Contact contact;
+
+  const ContactScreen({super.key, required this.contact});
 
   @override
   State<ContactScreen> createState() => _ContactScreenState();
@@ -22,134 +26,27 @@ class _ContactScreenState extends State<ContactScreen> {
   late TextEditingController _firstNameController,
       _surnameController,
       _emailController,
+      _groupNameController,
       _phoneController,
       _secondaryPhoneController;
+  late String _contactImageurl;
 
   @override
   void initState() {
     _firstNameController = TextEditingController();
+    _firstNameController.text = widget.contact.firstName ?? "";
     _surnameController = TextEditingController();
+    _surnameController.text = widget.contact.surname ?? "";
     _emailController = TextEditingController();
+    _emailController.text = widget.contact.email ?? "";
+    _groupNameController = TextEditingController();
+    _groupNameController.text = widget.contact.groupName ?? "";
     _phoneController = TextEditingController();
+    _phoneController.text = widget.contact.phone ?? "";
     _secondaryPhoneController = TextEditingController();
+    _secondaryPhoneController.text = widget.contact.secondaryPhone ?? "";
+
     super.initState();
-  }
-
-  void _uploadContact(
-      String firstName,
-      String surname,
-      String phone,
-      String secondaryPhone,
-      String email,
-      XFile? file,
-      BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(AppConstants.TOKEN);
-
-    //create multipart request for POST or PATCH method
-    var request = http.MultipartRequest(
-        "POST", Uri.parse("${AppConstants.BASE_URL}/add"));
-
-    final Map<String, String> headers = {
-      "Authorization": "Bearer $token",
-      'Accept': 'application/json'
-    };
-    final Map<String, String> fields = {
-      "label": "work",
-      "first_name": firstName,
-      "surname": surname,
-      "phone": phone,
-      "secondary_phone": secondaryPhone,
-      "email": email,
-    };
-
-    request.fields.addAll(fields);
-    request.headers.addAll(headers);
-
-    //create multipart using filepath, string or bytes
-    try {
-      var pic = await http.MultipartFile.fromPath("image", file!.path);
-      //add multipart to request
-      request.files.add(pic);
-
-      var response = await request.send();
-      //Get the response from the server
-      debugPrint("multipart response $response");
-      var responseData = await response.stream.toBytes();
-
-      var responseString = String.fromCharCodes(responseData);
-      debugPrint("Response data: $responseString");
-      Navigator.pop(context);
-    } on Exception catch (e) {
-      debugPrint("multipart request error ${e.toString()}");
-    }
-  }
-
-  void deleteContact(int contactId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(AppConstants.TOKEN);
-
-    try {
-      http.Response response = await http.get(
-          Uri.parse('${AppConstants.BASE_URL}/delete/$contactId'),
-          headers: {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-            'Accept': 'application/json'
-          });
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
-
-        if (jsonMap['success']) {
-          _showSuccessSnackBar(jsonMap['message']);
-        } else {
-          _showErrorSnackBar(jsonMap['message']);
-        }
-      } else {
-        var errorResponse = response.body;
-        debugPrint("response error code : ${response.statusCode} \n"
-            "response body : $errorResponse");
-        ScaffoldMessenger.of(context)
-            .showSnackBar(//todo: sort lint context rule later
-                _showErrorSnackBar('Server error. Try again later'));
-      }
-    } on SocketException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          //todo: sort lint context rule later
-          _showErrorSnackBar('Check your internet connection then try again'));
-    } on Exception catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  SnackBar _showErrorSnackBar(String errorMessage) {
-    return SnackBar(
-        backgroundColor: Palette.tileDividerColor,
-        elevation: 5.0,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        content: Text(
-          errorMessage,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: Colors.white),
-        ));
-  }
-
-  SnackBar _showSuccessSnackBar(String successMessage) {
-    return SnackBar(
-        backgroundColor: Palette.activeCardColor,
-        elevation: 5.0,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(horizontal: 20),
-        content: Text(
-          successMessage,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: Colors.white),
-        ));
   }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -158,6 +55,7 @@ class _ContactScreenState extends State<ContactScreen> {
   final ImagePicker picker = ImagePicker();
   XFile? _image;
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
@@ -181,10 +79,12 @@ class _ContactScreenState extends State<ContactScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: CircleAvatar(
-                          radius: 80,
+                          maxRadius: 80,
+                          minRadius: 40,
                           backgroundColor: Colors.transparent,
                           child: CachedNetworkImage(
-                            imageUrl: AppConstants.AVATAR_URL,
+                            imageUrl: widget.contact.imageUrl ??
+                                AppConstants.AVATAR_URL,
                             imageBuilder: (context, imageProvider) => Container(
                               decoration: BoxDecoration(
                                 image: DecorationImage(
@@ -310,6 +210,13 @@ class _ContactScreenState extends State<ContactScreen> {
                                         formIcon: Icons.mail,
                                         isEnabled: isEditingEnabled,
                                       ),
+                                      ProfileFormField(
+                                        labelText: "Group Name",
+                                        textEditingController:
+                                            _groupNameController,
+                                        formIcon: Icons.groups,
+                                        isEnabled: isEditingEnabled,
+                                      ),
                                       const SizedBox(height: 10),
                                       ProfileFormField(
                                         labelText: "Phone Number",
@@ -340,22 +247,153 @@ class _ContactScreenState extends State<ContactScreen> {
               ),
               const SizedBox(height: 10.0),
               FilledButton(
-                  child: const Text("UPDATE"),
-                  onPressed: () {
-                    _uploadContact(
+                  child: Text(widget.contact.id == 0 ? "ADD" : "UPDATE"),
+                  onPressed: () async {
+                    debugPrint("Before upload contact");
+                    await _uploadContact(
                         _firstNameController.text,
                         _surnameController.text,
                         _phoneController.text,
                         _secondaryPhoneController.text,
                         _emailController.text,
+                        _groupNameController.text,
                         _image,
-                        context);
+                        context,
+                        widget.contact.id == 0
+                            ? ContactScreenActions.add
+                            : ContactScreenActions.update);
+                    debugPrint("After upload contact");
                   })
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _uploadContact(
+      String firstName,
+      String surname,
+      String phone,
+      String secondaryPhone,
+      String email,
+      String groupName,
+      XFile? file,
+      BuildContext context,
+      ContactScreenActions uploadAction) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    //create multipart request for POST or PATCH method
+    var request = http.MultipartRequest(
+        "POST", Uri.parse("${AppConstants.BASE_URL}/add"));
+
+    final Map<String, String> headers = {
+      "Authorization": "Bearer $token",
+      'Accept': 'application/json'
+    };
+    final Map<String, String> fields = {
+      "label": "work",
+      "first_name": firstName,
+      "surname": surname,
+      "phone": phone,
+      "secondary_phone": secondaryPhone,
+      "email": email,
+      "group_name": groupName,
+    };
+
+    request.fields.addAll(fields);
+    request.headers.addAll(headers);
+
+    //todo: check if file path is null,
+    if (file != null) {
+      var pic = await http.MultipartFile.fromPath("image", file!.path);
+      //add multipart to request
+      request.files.add(pic);
+    }
+
+    //create multipart using filepath, string or bytes
+    try {
+      var response = await request.send();
+      //Get the response from the server
+      debugPrint("multipart response $response");
+      var responseData = await response.stream.toBytes();
+
+      var responseString = String.fromCharCodes(responseData);
+      debugPrint("Response data: ${jsonDecode(responseString)}");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(_showSuccessSnackBar(responseString));
+      Navigator.pop(context);
+    } on Exception catch (e) {
+      debugPrint("multipart request error ${e.toString()}");
+    }
+  }
+
+  Future<void> deleteContact(int contactId, BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    try {
+      http.Response response = await http.get(
+          Uri.parse('${AppConstants.BASE_URL}/delete/$contactId'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+          });
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
+
+        if (jsonMap['success']) {
+          _showSuccessSnackBar(jsonMap['message']);
+        } else {
+          _showErrorSnackBar(jsonMap['message']);
+        }
+      } else {
+        var errorResponse = response.body;
+        debugPrint("response error code : ${response.statusCode} \n"
+            "response body : $errorResponse");
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar('Server error. Try again later'));
+      }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+          //todo: sort lint context rule later
+          _showErrorSnackBar('Check your internet connection then try again'));
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
+  SnackBar _showErrorSnackBar(String errorMessage) {
+    return SnackBar(
+        backgroundColor: Palette.tileDividerColor,
+        elevation: 5.0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        content: Text(
+          errorMessage,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
+        ));
+  }
+
+  SnackBar _showSuccessSnackBar(String successMessage) {
+    return SnackBar(
+        backgroundColor: Palette.activeCardColor,
+        elevation: 5.0,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        content: Text(
+          successMessage,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: Colors.white),
+        ));
   }
 }
 
@@ -394,8 +432,7 @@ class ProfileHeader extends StatelessWidget {
                   imageBuilder: (context, imageProvider) => Container(
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: imageProvider,
-                      ),
+                          image: imageProvider, fit: BoxFit.fitHeight),
                     ),
                   ),
                   placeholder: (context, _) => SpinKitFadingCircle(
@@ -465,7 +502,7 @@ class ProfileFormField extends StatelessWidget {
         // validator: _emailValidator, //TODO: set individual validators
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: Theme.of(context).textTheme.bodyText2,
+          labelStyle: Theme.of(context).textTheme.bodyMedium,
           prefixIcon: Icon(
             formIcon,
             color: Colors.black,

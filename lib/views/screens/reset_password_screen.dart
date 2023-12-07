@@ -92,7 +92,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             'Reset password',
                             style: Theme.of(context)
                                 .textTheme
-                                .headline5!
+                                .headlineSmall!
                                 .copyWith(
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 2),
@@ -109,7 +109,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             labelText: 'New password',
                             labelStyle: Theme.of(context)
                                 .textTheme
-                                .bodyText2!
+                                .bodyMedium!
                                 .copyWith(color: Colors.black),
                             focusColor: Palette.highlightedTextColor,
                             hintText: 'New password',
@@ -156,7 +156,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             labelText: 'Confirm Password',
                             labelStyle: Theme.of(context)
                                 .textTheme
-                                .bodyText2!
+                                .bodyMedium!
                                 .copyWith(color: Colors.black),
                             focusColor: Palette.highlightedTextColor,
                             hintText: 'Confirm Password',

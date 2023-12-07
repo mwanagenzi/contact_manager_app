@@ -24,6 +24,49 @@ class _ContactsScreenState extends State<ContactsScreen> {
   String? _username, _email;
   MenuItem? selectedValue;
 
+  Future<void> _syncContacts() async {
+    await getAllContacts();
+  }
+
+  Future<void> deleteContact(int? contactId, BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    try {
+      http.Response response = await http.get(
+          Uri.parse('${AppConstants.BASE_URL}/delete/$contactId'),
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+            'Accept': 'application/json'
+          });
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
+
+        if (jsonMap['success']) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showSuccessSnackBar(jsonMap['message']));
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(_showErrorSnackBar(jsonMap['message']));
+        }
+      } else {
+        var errorResponse = response.body;
+        debugPrint("response error code : ${response.statusCode} \n"
+            "response body : $errorResponse");
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar('Server error. Try again later'));
+      }
+    } on SocketException {
+      ScaffoldMessenger.of(context).showSnackBar(
+          //todo: sort lint context rule later
+          _showErrorSnackBar('Check your internet connection then try again'));
+    } on Exception catch (e) {
+      debugPrint(e.toString());
+    }
+  }
+
   @override
   void initState() {
     getUserCredentials();
@@ -85,102 +128,281 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 child: FutureBuilder(
                   future: getAllContacts(),
                   builder: (context, AsyncSnapshot<List<Contact>> snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: SpinKitFadingCircle(
-                          color: Palette.activeCardColor,
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      debugPrint(snapshot.error.toString());
-                      debugPrint(snapshot.toString());
-                      return Center(
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.none:
+                        return Center(
                           child: Text(
-                        snapshot.error.toString(),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ));
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.done) {
-                      final contacts = snapshot.data;
-                      return ListView.separated(
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              leading: CircleAvatar(
-                                maxRadius: 20,
-                                minRadius: 10,
-                                backgroundColor: Colors.transparent,
-                                child: CachedNetworkImage(
-                                  imageUrl: contacts?[index].imageUrl ??
-                                      AppConstants.AVATAR_URL,
-                                  //todo: solve problem in fetching image url
-                                  imageBuilder: (context, imageProvider) =>
-                                      Container(
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: imageProvider,
+                            'At none',
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                        );
+                      case ConnectionState.waiting:
+                        return const Center(
+                          child: SpinKitFadingCircle(
+                            color: Palette.activeCardColor,
+                          ),
+                        );
+                      case ConnectionState.active:
+                      case ConnectionState.done:
+                        final contacts = snapshot.data;
+                        return RefreshIndicator(
+                          onRefresh: () {
+                            setState(() {});
+                            return _syncContacts();
+                          },
+                          child: ListView.separated(
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    maxRadius: 20,
+                                    minRadius: 10,
+                                    backgroundColor: Colors.transparent,
+                                    child: CachedNetworkImage(
+                                      imageUrl: contacts?[index].imageUrl ??
+                                          AppConstants.AVATAR_URL,
+                                      //todo: solve problem in fetching image url
+                                      imageBuilder: (context, imageProvider) =>
+                                          Container(
+                                        decoration: BoxDecoration(
+                                          image: DecorationImage(
+                                            image: imageProvider,
+                                          ),
+                                        ),
+                                      ),
+                                      placeholder: (context, _) =>
+                                          SpinKitFadingCircle(
+                                        itemBuilder:
+                                            (BuildContext context, int index) {
+                                          return const DecoratedBox(
+                                            decoration: BoxDecoration(
+                                              color: Palette.activeCardColor,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(
+                                        Icons.error,
+                                        size: 30,
                                       ),
                                     ),
                                   ),
-                                  placeholder: (context, _) =>
-                                      SpinKitFadingCircle(
-                                    itemBuilder:
-                                        (BuildContext context, int index) {
-                                      return const DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: Palette.activeCardColor,
-                                        ),
-                                      );
+                                  title: Text(
+                                    contacts?[index].firstName ?? 'First name',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  subtitle: Text(
+                                    contacts?[index].phone ?? 'Phone number',
+                                    style:
+                                        Theme.of(context).textTheme.labelMedium,
+                                  ),
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      await showDialog(
+                                          barrierDismissible: true,
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                                title: const Text(
+                                                    "Confirm Delete"),
+                                                content: const Text(
+                                                    "Are you sure you want to delete this contact?"),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      await deleteContact(
+                                                          contacts?[index].id,
+                                                          context);
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: const Text(
+                                                      "YES",
+                                                      style: TextStyle(
+                                                          color: Palette
+                                                              .activeCardColor),
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(context),
+                                                    child: const Text(
+                                                      "NO",
+                                                      style: TextStyle(
+                                                          color: Colors.red),
+                                                    ),
+                                                  )
+                                                ],
+                                              ));
                                     },
                                   ),
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(
-                                    Icons.error,
-                                    size: 30,
-                                  ),
-                                ),
-                              ),
-                              title: Text(
-                                contacts?[index].firstName ?? 'First name',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              subtitle: Text(
-                                contacts?[index].phone ?? 'Phone number',
-                                style: Theme.of(context).textTheme.labelMedium,
-                              ),
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  //todo: delete contact
-                                },
-                              ),
-                              onTap: () {
-                                //todo: update contact details
-                                Navigator.pushNamed(context, AppRoutes.contact,
-                                    arguments: Contact(
-                                        id: contacts?[index].id,
-                                        firstName: contacts?[index].firstName,
-                                        phone: contacts?[index].phone,
-                                        email: contacts?[index].email,
-                                        secondaryPhone:
-                                            contacts?[index].secondaryPhone));
+                                  onTap: () {
+                                    //todo: update contact details
+                                    Navigator.pushNamed(
+                                        context, AppRoutes.contact,
+                                        arguments: Contact(
+                                            id: contacts?[index].id,
+                                            firstName:
+                                                contacts?[index].firstName,
+                                            phone: contacts?[index].phone,
+                                            email: contacts?[index].email,
+                                            secondaryPhone:
+                                                contacts?[index].secondaryPhone,
+                                            groupName:
+                                                contacts?[index].groupName,
+                                            imageUrl:
+                                                contacts?[index].imageUrl));
+                                  },
+                                );
                               },
-                            );
-                          },
-                          separatorBuilder: (context, index) {
-                            return const Divider(
-                              height: 25,
-                              color: Palette.dashTileColor,
-                            );
-                          },
-                          itemCount: snapshot.data?.length ?? 0);
-                    } else {
-                      return Center(
-                        child: Text(
-                          'Still loading',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      );
+                              separatorBuilder: (context, index) {
+                                return const Divider(
+                                  height: 25,
+                                  color: Palette.dashTileColor,
+                                );
+                              },
+                              itemCount: snapshot.data?.length ?? 0),
+                        );
                     }
+
+                    // if (snapshot.connectionState == ConnectionState.waiting) {
+                    //   return const Center(
+                    //     child: SpinKitFadingCircle(
+                    //       color: Palette.activeCardColor,
+                    //     ),
+                    //   );
+                    // } else if (snapshot.hasError) {
+                    //   debugPrint(snapshot.error.toString());
+                    //   debugPrint(snapshot.toString());
+                    //   return Center(
+                    //       child: Text(
+                    //         snapshot.error.toString(),
+                    //         style: Theme.of(context).textTheme.bodyMedium,
+                    //       ));
+                    // } else if (snapshot.connectionState ==
+                    //     ConnectionState.done) {
+                    //   final contacts = snapshot.data;
+                    //   return RefreshIndicator(
+                    //     onRefresh: () {
+                    //       return _syncedContacts = getAllContacts();
+                    //     },
+                    //     child: ListView.separated(
+                    //         itemBuilder: (context, index) {
+                    //           return ListTile(
+                    //             leading: CircleAvatar(
+                    //               maxRadius: 20,
+                    //               minRadius: 10,
+                    //               backgroundColor: Colors.transparent,
+                    //               child: CachedNetworkImage(
+                    //                 imageUrl: contacts?[index].imageUrl ??
+                    //                     AppConstants.AVATAR_URL,
+                    //                 //todo: solve problem in fetching image url
+                    //                 imageBuilder: (context, imageProvider) =>
+                    //                     Container(
+                    //                   decoration: BoxDecoration(
+                    //                     image: DecorationImage(
+                    //                       image: imageProvider,
+                    //                     ),
+                    //                   ),
+                    //                 ),
+                    //                 placeholder: (context, _) =>
+                    //                     SpinKitFadingCircle(
+                    //                   itemBuilder:
+                    //                       (BuildContext context, int index) {
+                    //                     return const DecoratedBox(
+                    //                       decoration: BoxDecoration(
+                    //                         color: Palette.activeCardColor,
+                    //                       ),
+                    //                     );
+                    //                   },
+                    //                 ),
+                    //                 errorWidget: (context, url, error) =>
+                    //                     const Icon(
+                    //                   Icons.error,
+                    //                   size: 30,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //             title: Text(
+                    //               contacts?[index].firstName ?? 'First name',
+                    //               style: Theme.of(context).textTheme.bodyMedium,
+                    //             ),
+                    //             subtitle: Text(
+                    //               contacts?[index].phone ?? 'Phone number',
+                    //               style:
+                    //                   Theme.of(context).textTheme.labelMedium,
+                    //             ),
+                    //             trailing: IconButton(
+                    //               icon: const Icon(Icons.delete),
+                    //               onPressed: () async {
+                    //                 await showDialog(
+                    //                     barrierDismissible: true,
+                    //                     context: context,
+                    //                     builder: (context) => AlertDialog(
+                    //                           title:
+                    //                               const Text("Confirm Delete"),
+                    //                           content: const Text(
+                    //                               "Are you sure you want to delete this contact?"),
+                    //                           actions: [
+                    //                             TextButton(
+                    //                               onPressed: () async {
+                    //                                 await deleteContact(
+                    //                                     contacts?[index].id,
+                    //                                     context);
+                    //                                 Navigator.pop(context);
+                    //                               },
+                    //                               child: const Text(
+                    //                                 "YES",
+                    //                                 style: TextStyle(
+                    //                                     color: Palette
+                    //                                         .activeCardColor),
+                    //                               ),
+                    //                             ),
+                    //                             TextButton(
+                    //                               onPressed: () =>
+                    //                                   Navigator.pop(context),
+                    //                               child: const Text(
+                    //                                 "NO",
+                    //                                 style: TextStyle(
+                    //                                     color: Colors.red),
+                    //                               ),
+                    //                             )
+                    //                           ],
+                    //                         ));
+                    //               },
+                    //             ),
+                    //             onTap: () {
+                    //               //todo: update contact details
+                    //               Navigator.pushNamed(
+                    //                   context, AppRoutes.contact,
+                    //                   arguments: Contact(
+                    //                       id: contacts?[index].id,
+                    //                       firstName: contacts?[index].firstName,
+                    //                       phone: contacts?[index].phone,
+                    //                       email: contacts?[index].email,
+                    //                       secondaryPhone:
+                    //                           contacts?[index].secondaryPhone,
+                    //                       groupName: contacts?[index].groupName,
+                    //                       imageUrl: contacts?[index].imageUrl));
+                    //             },
+                    //           );
+                    //         },
+                    //         separatorBuilder: (context, index) {
+                    //           return const Divider(
+                    //             height: 25,
+                    //             color: Palette.dashTileColor,
+                    //           );
+                    //         },
+                    //         itemCount: snapshot.data?.length ?? 0),
+                    //   );
+                    // } else {
+                    //   return Center(
+                    //     child: Text(
+                    //       'Still loading',
+                    //       style: Theme.of(context).textTheme.bodyLarge,
+                    //     ),
+                    //   );
+                    // }
                   },
                 ),
               ),
@@ -246,6 +468,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
   }
 
   Future<List<Contact>> getAllContacts() async {
+    debugPrint("I've been hit");
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.TOKEN);
@@ -276,7 +499,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
                 _showErrorSnackBar('Server error. Try again later'));
         return [];
       }
-    } on SocketException catch (e) {
+    } on SocketException {
       ScaffoldMessenger.of(context).showSnackBar(
           //todo: sort lint context rule later
           _showErrorSnackBar('Check your internet connection then try again'));
