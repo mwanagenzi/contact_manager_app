@@ -105,11 +105,20 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
                                                 TextButton(
                                                   onPressed: () async {
                                                     await deleteGroup(
-                                                        contactGroup
-                                                            ?.groups[index]
-                                                            .groupId,
-                                                        context);
-                                                    Navigator.pop(context);
+                                                            contactGroup
+                                                                ?.groups[index]
+                                                                .groupId,
+                                                            context)
+                                                        .then((value) {
+                                                      Navigator.pop(context);
+                                                    }).onError((error,
+                                                            stackTrace) {
+                                                      debugPrintStack(
+                                                          stackTrace:
+                                                              stackTrace,
+                                                          label:
+                                                              "Group Delete Future Error");
+                                                    });
                                                   },
                                                   child: const Text(
                                                     "YES",
@@ -183,10 +192,9 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            final unallocatedContacts =
-                await _getAllUnallocatedContacts(context);
+            final contacts = await _getAllContacts(context);
             Navigator.pushNamed(context, AppRoutes.group, arguments: {
-              "contacts": unallocatedContacts,
+              "contacts": contacts,
               "action": GroupScreenActions.add
             });
           },
@@ -228,17 +236,16 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
         ));
   }
 
-  Future<List<Contact>> _getAllUnallocatedContacts(BuildContext context) async {
+  Future<List<Contact>> _getAllContacts(BuildContext context) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.TOKEN);
-      http.Response response = await http.get(
-          Uri.parse('${AppConstants.BASE_URL}/unallocated_contacts'),
-          headers: {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-            'Accept': 'application/json'
-          });
+      http.Response response = await http
+          .get(Uri.parse('${AppConstants.BASE_URL}/contacts'), headers: {
+        "Authorization": "Bearer $token",
+        "Content-Type": "application/json",
+        'Accept': 'application/json'
+      });
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonMap = jsonDecode(response.body);
 
@@ -252,12 +259,12 @@ class _ContactGroupsScreenState extends State<ContactGroupsScreen> {
           return [];
         }
       } else {
-        var errorResponse = response.body;
+        final Map<String, dynamic> jsonMap = jsonDecode(response.body);
         debugPrint("response error code : ${response.statusCode} \n"
-            "response body : $errorResponse");
-        ScaffoldMessenger.of(context)
-            .showSnackBar(//todo: sort lint context rule later
-                _showErrorSnackBar('Server error. Try again later', context));
+            "response body : ${jsonMap['message']}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            //todo: sort lint context rule later
+            _showErrorSnackBar('Error. Check server log for details', context));
         return [];
       }
     } on SocketException {
