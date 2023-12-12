@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:contacts_manager/models/Contact.dart';
-import 'package:contacts_manager/models/ContactScreenActions.dart';
 import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -29,7 +28,8 @@ class _ContactScreenState extends State<ContactScreen> {
       _groupNameController,
       _phoneController,
       _secondaryPhoneController;
-  late String _contactImageurl;
+
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -246,24 +246,45 @@ class _ContactScreenState extends State<ContactScreen> {
                 ),
               ),
               const SizedBox(height: 10.0),
-              FilledButton(
-                  child: Text(widget.contact.id == 0 ? "ADD" : "UPDATE"),
-                  onPressed: () async {
-                    debugPrint("Before upload contact");
-                    await _uploadContact(
-                        _firstNameController.text,
-                        _surnameController.text,
-                        _phoneController.text,
-                        _secondaryPhoneController.text,
-                        _emailController.text,
-                        _groupNameController.text,
-                        _image,
-                        context,
+              !_isLoading
+                  ? const SpinKitFadingCircle(
+                      color: Palette.activeCardColor,
+                    )
+                  : FilledButton(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          widget.contact.id == 0 ? "ADD" : "UPDATE",
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelMedium
+                              ?.copyWith(color: Colors.white),
+                        ),
+                      ),
+                      onPressed: () async {
+                        debugPrint("Before upload contact");
                         widget.contact.id == 0
-                            ? ContactScreenActions.add
-                            : ContactScreenActions.update);
-                    debugPrint("After upload contact");
-                  })
+                            ? await _addContact(
+                                _firstNameController.text,
+                                _surnameController.text,
+                                _phoneController.text,
+                                _secondaryPhoneController.text,
+                                _emailController.text,
+                                _groupNameController.text,
+                                _image,
+                                context)
+                            : await _updateContact(
+                                widget.contact.id.toString(),
+                                _firstNameController.text,
+                                _surnameController.text,
+                                _phoneController.text,
+                                _secondaryPhoneController.text,
+                                _emailController.text,
+                                _groupNameController.text,
+                                _image,
+                                context);
+                        debugPrint("After upload contact");
+                      })
             ],
           ),
         ),
@@ -271,7 +292,7 @@ class _ContactScreenState extends State<ContactScreen> {
     );
   }
 
-  Future<void> _uploadContact(
+  Future<void> _addContact(
       String firstName,
       String surname,
       String phone,
@@ -279,8 +300,7 @@ class _ContactScreenState extends State<ContactScreen> {
       String email,
       String groupName,
       XFile? file,
-      BuildContext context,
-      ContactScreenActions uploadAction) async {
+      BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(AppConstants.TOKEN);
 
@@ -293,7 +313,6 @@ class _ContactScreenState extends State<ContactScreen> {
       'Accept': 'application/json'
     };
     final Map<String, String> fields = {
-      "label": "work",
       "first_name": firstName,
       "surname": surname,
       "phone": phone,
@@ -307,7 +326,65 @@ class _ContactScreenState extends State<ContactScreen> {
 
     //todo: check if file path is null,
     if (file != null) {
-      var pic = await http.MultipartFile.fromPath("image", file!.path);
+      var pic = await http.MultipartFile.fromPath("image", file.path);
+      //add multipart to request
+      request.files.add(pic);
+    }
+
+    //create multipart using filepath, string or bytes
+    try {
+      var response = await request.send();
+      //Get the response from the server
+      debugPrint("multipart response $response");
+      var responseData = await response.stream.toBytes();
+
+      var responseString = String.fromCharCodes(responseData);
+      debugPrint("Response data: ${jsonDecode(responseString)}");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(_showSuccessSnackBar(responseString));
+      Navigator.pop(context);
+    } on Exception catch (e) {
+      debugPrint("multipart request error ${e.toString()}");
+    }
+  }
+
+  Future<void> _updateContact(
+      String contactId,
+      String firstName,
+      String surname,
+      String phone,
+      String secondaryPhone,
+      String email,
+      String groupName,
+      XFile? file,
+      BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(AppConstants.TOKEN);
+
+    //create multipart request for POST or PATCH method
+    var request = http.MultipartRequest(
+        "POST", Uri.parse("${AppConstants.BASE_URL}/update"));
+
+    final Map<String, String> headers = {
+      "Authorization": "Bearer $token",
+      'Accept': 'application/json'
+    };
+    final Map<String, String> fields = {
+      "id": contactId,
+      "first_name": firstName,
+      "surname": surname,
+      "phone": phone,
+      "secondary_phone": secondaryPhone,
+      "email": email,
+      "group_name": groupName,
+    };
+
+    request.fields.addAll(fields);
+    request.headers.addAll(headers);
+
+    //todo: check if file path is null,
+    if (file != null) {
+      var pic = await http.MultipartFile.fromPath("image", file.path);
       //add multipart to request
       request.files.add(pic);
     }

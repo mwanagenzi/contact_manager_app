@@ -154,10 +154,20 @@ class _GroupScreenState extends State<GroupScreen> {
                                       in selectedContactListItems) {
                                     selectedIds.add(contact.contact?.id);
                                   }
+                                  // debugPrint("Selected Ids: $selectedIds");
+                                  // Navigator.pop(context);
+
                                   await addContactsToGroup(selectedIds,
-                                      _groupNameTextEditingController.text);
-                                  // showProgressIndicator();
-                                  debugPrint("Selected Ids: $selectedIds");
+                                          _groupNameTextEditingController.text)
+                                      .then((value) {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  }).onError((error, stackTrace) {
+                                    debugPrintStack(
+                                        stackTrace: stackTrace,
+                                        label:
+                                            "addContactsToGroup() Future error");
+                                  });
                                 },
                                 child: const Text("OK"),
                               ),
@@ -177,8 +187,14 @@ class _GroupScreenState extends State<GroupScreen> {
                   for (var contact in selectedContactListItems) {
                     selectedIds.add(contact.contact?.id);
                   }
-                  await updateGroupContacts(
-                      selectedIds, contacts.first.groupId);
+                  await updateGroupContacts(selectedIds, contacts.first.groupId)
+                      .then((value) {
+                    Navigator.pop(context);
+                  }).onError((error, stackTrace) {
+                    debugPrintStack(
+                        stackTrace: stackTrace,
+                        label: "updateGroupContacts() Future error");
+                  });
                   // showProgressIndicator();
                 },
           elevation: 5,

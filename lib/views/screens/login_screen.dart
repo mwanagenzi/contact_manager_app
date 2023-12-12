@@ -5,6 +5,7 @@ import 'package:contacts_manager/utils/app_constants.dart';
 import 'package:contacts_manager/views/theme/color_palette.dart';
 import 'package:contacts_manager/views/widgets/auth_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -37,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool _isTextObscured = true;
+  bool _isLoading = false;
   IconData _visibilityIcon = Icons.visibility_off;
 
   IconData _changePasswordSuffixIcon(IconData visibleIcon) {
@@ -84,14 +86,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ));
   }
 
-  SnackBar _showSuccessSnackBar(String errorMessage) {
+  SnackBar _showSuccessSnackBar(String successMessage) {
     return SnackBar(
         backgroundColor: Palette.activeCardColor,
         elevation: 5.0,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         content: Text(
-          errorMessage,
+          successMessage,
           style: Theme.of(context)
               .textTheme
               .bodyMedium
@@ -116,31 +118,40 @@ class _LoginScreenState extends State<LoginScreen> {
           final Map<String, dynamic> jsonMap = jsonDecode(response.body);
 
           if (jsonMap['success']) {
-            ScaffoldMessenger.of(context)
-                .showSnackBar(//todo: sort lint context rule later
-                    _showSuccessSnackBar('Login success!!!'));
+            setState(() => _isLoading = false);
             await storeUserCredentials(jsonMap['token'],
-                jsonMap['datum']['name'], jsonMap['datum']['email']);
-            Navigator.popAndPushNamed(context, AppRoutes.home);
+                    jsonMap['data']['name'], jsonMap['data']['email'])
+                .then((value) {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(//todo: sort lint context rule later
+                      _showSuccessSnackBar('Login success!!!'));
+              Navigator.popAndPushNamed(context, AppRoutes.home);
+            }).onError((error, stackTrace) {
+              debugPrintStack(stackTrace: stackTrace);
+            });
           } else {
+            setState(() => _isLoading = false);
             ScaffoldMessenger.of(context)
                 .showSnackBar(//todo: sort lint context rule later
-                    _showSuccessSnackBar('Login failed!!!'));
+                    _showErrorSnackBar('Invalid credentials'));
           }
         } else {
           var errorResponse = response.body;
           debugPrint("response error code : ${response.statusCode} /n"
               "response body : $errorResponse");
+          setState(() => _isLoading = false);
           ScaffoldMessenger.of(context)
               .showSnackBar(//todo: sort lint context rule later
                   _showErrorSnackBar('Login failed. Try again later'));
         }
       } on SocketException {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
             //todo: sort lint context rule later
             _showErrorSnackBar(
                 'Check your internet connection then try again'));
       } on Exception catch (e) {
+        setState(() => _isLoading = false);
         debugPrint(e.toString());
       }
     }
@@ -254,13 +265,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        AuthButton(
-                          buttonText: 'Continue',
-                          buttonFunction: () {
-                            _userLogin(context, _emailController.text,
-                                _passwordController.text);
-                          },
-                        ),
+                        _isLoading
+                            ? const SpinKitFadingCircle(
+                                color: Palette.activeCardColor,
+                              )
+                            : AuthButton(
+                                buttonText: 'Continue',
+                                buttonFunction: () {
+                                  setState(() {
+                                    _isLoading = true;
+                                  });
+                                  //todo: set loader here
+                                  _userLogin(context, _emailController.text,
+                                      _passwordController.text);
+                                },
+                              ),
                         const SizedBox(height: 20),
                         Row(
                           children: [
@@ -268,8 +287,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(width: 10),
                             InkWell(
                               onTap: () {
-                                Navigator.popAndPushNamed(
-                                    context, AppRoutes.signUp);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    _showSuccessSnackBar("Coming Soon!"));
                                 //TODO navigate to the registration page
                               },
                               child: const Text(
@@ -283,8 +302,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 20),
                         InkWell(
                           onTap: () {
-                            Navigator.popAndPushNamed(
-                                context, AppRoutes.resetPassword);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                _showSuccessSnackBar("Coming Soon!"));
                             //TODO: password reset functionality
                           },
                           child: Text(
